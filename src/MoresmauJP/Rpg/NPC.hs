@@ -433,8 +433,8 @@ getFightAttitudes npc fi=let
         fight=21-(npcAttitude npc)
         percentPhysical=getCurrentPercentOfNormal (npcCharacter npc) Physical
         percentMental=getCurrentPercentOfNormal (npcCharacter npc) Mental
-        npcLossesSum=(M.fold (+) 0 (npcLosses fi))
-        cLossesSum=(M.fold (+) 0 (cLosses fi))
+        npcLossesSum=(M.foldr (+) 0 (npcLosses fi))
+        cLossesSum=(M.foldr (+) 0 (cLosses fi))
         percentLoss=if npcLossesSum>0
                 then (cLossesSum * 100) `div` npcLossesSum
                 else 100
