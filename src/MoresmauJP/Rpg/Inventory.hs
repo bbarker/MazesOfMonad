@@ -2,7 +2,7 @@
 -- (c) JP Moresmau 2009
 module MoresmauJP.Rpg.Inventory (
         Inventory(), Position(..), ItemType(..), InventoryError(..),PotionType(..),
-        makeEmptyInventory, makeFullInventory, takeItem, dropItem, listItems, 
+        makeEmptyInventory, makeFullInventory, takeItem, dropItem, listItems,
         listAllowedPositions,listActiveItems,listCarriedItems,listCarriedItemsUniqueObject,
         getCarriedItem,        positionAllowed, addGold, getGold,
         Gold, isActive
@@ -13,24 +13,24 @@ import Data.Maybe
 import qualified Data.Map as M
 
 data ItemType = Weapon {
-                itName::String, 
-                damageLow::Int, 
+                itName::String,
+                damageLow::Int,
                 damageHigh::Int,
                 hands::Int,
                 price::Gold}
         | Armor {
-                itName::String, 
-                damageLow::Int, 
+                itName::String,
+                damageLow::Int,
                 damageHigh::Int,
                 price::Gold}
         | Shield {
-                itName::String, 
-                damageLow::Int, 
+                itName::String,
+                damageLow::Int,
                 damageHigh::Int,
                 price::Gold}
         | Helmet {
-                itName::String, 
-                damageLow::Int, 
+                itName::String,
+                damageLow::Int,
                 damageHigh::Int,
                 price::Gold}
         | Potion {
@@ -43,17 +43,17 @@ data ItemType = Weapon {
                 price::Gold}
         | Trap {
                 itName::String,
-                damageLow::Int, 
+                damageLow::Int,
                 damageHigh::Int,
                 triggerDescription::String
                 }
         deriving (Show,Read,Eq)
-        
+
 
 data Position= RightHand | LeftHand | Body | Head | Bag Int
         deriving (Show,Read,Eq,Ord)
 
--- | Inventory Map item by Position Bag Size 
+-- | Inventory Map item by Position Bag Size
 data Inventory = Inventory {
         invItems::(M.Map Position ItemType),
         invBagCapacity:: Int,
@@ -97,7 +97,7 @@ getGold i=invGold i
 
 reconcile2Hand :: Inventory -> [(Position,ItemType)] -> Inventory
 reconcile2Hand i poss=foldr f i poss
-        where 
+        where
                 f:: (Position,ItemType) -> Inventory -> Inventory
                 f pos i=
                         case getCarriedItem i (fst pos)        of
@@ -111,7 +111,7 @@ takeItem i@(Inventory {invBagCapacity= sz}) it p=  do
         p2 <- checkPos sz p
         ti1 <- takeItem' i it p2 True
         takeTwoHandsItem ti1 it p2
-        
+
 takeTwoHandsItem ::(Inventory,Maybe ItemType) -> ItemType -> Position  -> Either InventoryError (Inventory,[ItemType])
 takeTwoHandsItem (i,it1) it@(Weapon {hands=2}) RightHand= do
         (iv2,it2) <- takeItem' i it LeftHand (needSndDrop it1)
@@ -121,7 +121,7 @@ takeTwoHandsItem (i,it1) it@(Weapon {hands=2}) LeftHand= do
         return (iv2,catMaybes [it1,it2])
 takeTwoHandsItem (i,it1)  _ _=do
         return (i,catMaybes [it1])
-        
+
 needSndDrop :: Maybe ItemType -> Bool
 needSndDrop (Just (Weapon {hands=2}))=False
 needSndDrop _=True
@@ -129,9 +129,9 @@ needSndDrop _=True
 takeItem' :: Inventory -> ItemType -> Position -> Bool -> Either InventoryError (Inventory,Maybe ItemType)
 takeItem' i it p needDrop=  do
         let allowed=positionAllowed it p
-        if allowed 
+        if allowed
                 then do
-                        (i2@(Inventory {invItems=m}),it2) <- if needDrop 
+                        (i2@(Inventory {invItems=m}),it2) <- if needDrop
                                 then dropItemToBag i p
                                 else Right (i, Nothing)
                         return ((i2{invItems=(M.insert p it m)}),it2)
@@ -148,14 +148,14 @@ dropItemToBag i p=do
                                 then do
                                         (i3,_)<- takeItem i2 (fromJust it2) (fromJust freeBagPos)
                                         return (i3,Nothing)
-                                else 
+                                else
                                         return mi2
                 else return mi2
 
 --instance Monad (Either InventoryError) where
 --        Left a >>= _ = Left a
 --        Right a >>= f = f a
---        return = Right 
+--        return = Right
 
 getFirstFreeBagPos:: Inventory -> Maybe Position
 getFirstFreeBagPos (Inventory {invItems=m,invBagCapacity=sz})=listToMaybe $ (filter (flip M.notMember m) (map Bag [1 .. sz]))
@@ -179,38 +179,38 @@ checkPos capacity (Bag pos) | pos>capacity = Left (InvalidBagPosition capacity)
 checkPos _ p = Right p
 
 listItems :: Inventory -> [(Position,Maybe ItemType)]
-listItems (Inventory {invItems=m,invBagCapacity=sz}) = map 
+listItems (Inventory {invItems=m,invBagCapacity=sz}) = map
         (\x -> (x,M.lookup x m))
         ([RightHand, LeftHand, Body, Head] ++ (map Bag [1..sz]))
-        
-listCarriedItems :: Inventory -> [(Position,ItemType)]        
+
+listCarriedItems :: Inventory -> [(Position,ItemType)]
 listCarriedItems i = map (\(x,y)->(x,fromJust y)) (filter (isJust . snd) (listItems i))
-        
-listCarriedItemsUniqueType :: Inventory -> [(Position,ItemType)]        
+
+listCarriedItemsUniqueType :: Inventory -> [(Position,ItemType)]
 listCarriedItemsUniqueType = nubBy (\x y -> (snd x)==(snd y)) . listCarriedItems
 
-listCarriedItemsUniqueObject :: Inventory -> [(Position,ItemType)]        
+listCarriedItemsUniqueObject :: Inventory -> [(Position,ItemType)]
 listCarriedItemsUniqueObject = (filter f) . listCarriedItems
-        where 
+        where
                 f (LeftHand,Weapon{hands=2})=False
                 f _=True
-        
-        
+
+
 getCarriedItem :: Inventory -> Position ->  Either InventoryError (Maybe ItemType)
 getCarriedItem (Inventory {invItems=m,invBagCapacity=sz}) pos=do
-        p2<- checkPos sz pos 
+        p2<- checkPos sz pos
         return (M.lookup p2 m)
-        
+
 listActiveItems :: Inventory -> [ItemType]
 listActiveItems i= (map snd (filter (isActive . fst) (listCarriedItems i)))
-        
+
 isActive :: Position -> Bool
 isActive (Bag {})=False
 isActive _ =True
-        
+
 listAllowedPositions :: Inventory -> ItemType -> [(Position,Maybe ItemType)]
 listAllowedPositions i it=filter ((positionAllowed it) . fst) (listItems i)
-        
+
 positionAllowed :: ItemType -> Position -> Bool
 -- everything can go in the bag
 positionAllowed _ (Bag {})=True

@@ -25,12 +25,12 @@ testScrollFill= TestLabel "Test filling scroll" (TestCase (do
         sc2<-evalRandT (generateScroll sc) (mkTestWrapper [2])
         assertEqual "not proper scroll" (Scroll "Scroll of Feel Better" "Feel Better" 5) sc2
         ))
-        
+
 testKillNPC=TestLabel "Test kill NPC" (TestCase (do
         std<-getStdGen
-        gw0<-(evalRandT (generateGameWorld (2,2)) (ProductionRandom std)) 
-        
-        let 
+        gw0<-(evalRandT (generateGameWorld (2,2)) (ProductionRandom std))
+
+        let
                 gw=gw0{position=(0,0)}
                 jp=createTestChar "JP"
                 item=Weapon "Sword" 2 6 1 10
@@ -44,12 +44,12 @@ testKillNPC=TestLabel "Test kill NPC" (TestCase (do
         assertEqual "Gold message is not 100" 100 g
         assertEqual "item not dropped" (Just [item]) dropped
         ))
-        
+
 testKillNPC2HandBag=TestLabel "Test kill NPC 2 Handed weapon in Bag" (TestCase (do
         std<-getStdGen
-        gw0<-(evalRandT (generateGameWorld (2,2)) (ProductionRandom std)) 
-        
-        let 
+        gw0<-(evalRandT (generateGameWorld (2,2)) (ProductionRandom std))
+
+        let
                 gw=gw0{position=(0,0)}
                 jp=createTestChar "JP"
                 item=Weapon "2 Handed Sword" 4 12 2 20
@@ -62,13 +62,13 @@ testKillNPC2HandBag=TestLabel "Test kill NPC 2 Handed weapon in Bag" (TestCase (
         assertEqual "Gold in JP's pocket is not 100" 100 (getGold $ inventory jp2)
         assertEqual "Gold message is not 100" 100 g
         assertEqual "item not dropped" (Just [item]) dropped
-        ))        
-        
+        ))
+
 testKillNPC2HandHand=TestLabel "Test kill NPC 2 Handed weapon in Hand" (TestCase (do
         std<-getStdGen
-        gw0<-(evalRandT (generateGameWorld (2,2)) (ProductionRandom std)) 
-        
-        let 
+        gw0<-(evalRandT (generateGameWorld (2,2)) (ProductionRandom std))
+
+        let
                 gw=gw0{position=(0,0)}
                 jp=createTestChar "JP"
                 item=Weapon "2 Handed Sword" 4 12 2 20
@@ -83,4 +83,4 @@ testKillNPC2HandHand=TestLabel "Test kill NPC 2 Handed weapon in Hand" (TestCase
         assertEqual "Gold in JP's pocket is not 100" 100 (getGold $ inventory jp2)
         assertEqual "Gold message is not 100" 100 g
         assertEqual "item not dropped" (Just [item]) dropped
-        ))        
+        ))

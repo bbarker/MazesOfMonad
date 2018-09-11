@@ -9,7 +9,7 @@ import Data.List
 import Data.Maybe
 import Data.Time
 
-import MoresmauJP.Maze1.Maze 
+import MoresmauJP.Maze1.Maze
 import MoresmauJP.Rpg.Character
 import MoresmauJP.Rpg.MazeObjects
 
@@ -37,7 +37,7 @@ data BackupState = BackupState {
   bckDate::UTCTime,
   bckCharacter::Character,
   bckGame::Maybe RPGGameState
-  }  
+  }
   deriving (Show,Read)
 
 backupExtension="sav"
@@ -46,7 +46,7 @@ toBackupState :: RPGState -> IO(BackupState)
 toBackupState (RPGState {rpgCharacter=Nothing})=error "toBackupState: empty game state"
 toBackupState (RPGState {rpgCharacter=(Just char),mgs=mgs})=do
   t<-getCurrentTime
-  return (BackupState t char mgs)  
+  return (BackupState t char mgs)
 
 fromBackupState :: RPGState -> BackupState -> RPGState
 fromBackupState rs  bs = rs{rpgCharacter=(Just $ bckCharacter bs), mgs=(bckGame bs)}
@@ -55,24 +55,24 @@ getFile :: String -> String -> RPGState -> IO(FilePath)
 getFile name ext (RPGState {fp=fp})= do
   createDirectoryIfMissing True fp
   let fileName=fp </> (makeValid $ (addExtension name ext))
-  return fileName  
+  return fileName
 
 getGameFileForName :: RPGState -> Name -> IO(FilePath)
 getGameFileForName rs name=getFile name backupExtension rs
 
 getGameFileForCharacter :: RPGState -> Character -> IO(FilePath)
 getGameFileForCharacter rs c=getGameFileForName rs (name c)
- 
+
 getBackupFileForCharacter :: RPGState -> Character -> IO(FilePath)
 getBackupFileForCharacter rs c=checkBackupFile rs (name c) 1
-    
+
 checkBackupFile rs name ix = do
   f<-getFile (addExtension name (show ix)) backupExtension rs
   ex<-doesFileExist f
-  if not ex 
+  if not ex
     then return f
     else checkBackupFile rs name (ix+1)
-    
+
 saveCurrent :: RPGState -> IO (Either String (String,String))
 saveCurrent (RPGState {rpgCharacter=Nothing})=return $ Right ("Nothing to save","")
 saveCurrent rs@(RPGState {rpgCharacter=Just c1})=do
@@ -85,31 +85,31 @@ saveCurrent rs@(RPGState {rpgCharacter=Just c1})=do
           return $ Right ("Character erased","")
         )
         (\e -> return (Left ("Could not erase character: " ++ (show e))))
-    else do  
+    else do
       saveCurrentGame rs
-      
+
 
 saveCurrentGame :: RPGState -> IO (Either String (String,String))
 saveCurrentGame (RPGState {rpgCharacter=Nothing})=error "saveCurrentGame: no character"
 saveCurrentGame (RPGState {mgs=Nothing})=error "saveCurrentGame: no game state"
-saveCurrentGame rs@(RPGState {rpgCharacter=Just c1})=do 
-  fileNameG<-getGameFileForCharacter rs c1 
+saveCurrentGame rs@(RPGState {rpgCharacter=Just c1})=do
+  fileNameG<-getGameFileForCharacter rs c1
   saveGame rs fileNameG
-  
+
 listFiles :: RPGState -> String -> IO ([FilePath])
-listFiles (RPGState {fp=fp}) ext =do  
+listFiles (RPGState {fp=fp}) ext =do
   createDirectoryIfMissing True fp
   fps<-getDirectoryContents fp
-  return $ (map (makeRelative fp)) $  filter (isSuffixOf ext) fps  
-  
+  return $ (map (makeRelative fp)) $  filter (isSuffixOf ext) fps
+
 listGames :: RPGState -> Name -> IO ([Either String (FilePath,String)])
 listGames rs name= do
-  files<-listFiles rs backupExtension 
+  files<-listFiles rs backupExtension
   let myFiles=filter (isPrefixOf name) files
   foldM (\list x->do
     m<-withBackup rs x (\bs->do
-      if isJust $ bckGame bs 
-        then return $ Just (dropExtension x,formatTime defaultTimeLocale (iso8601DateFormat $ Just "%R") $ bckDate bs) 
+      if isJust $ bckGame bs
+        then return $ Just (dropExtension x,formatTime defaultTimeLocale (iso8601DateFormat $ Just "%R") $ bckDate bs)
         else return Nothing
         )
     case m of
@@ -117,50 +117,50 @@ listGames rs name= do
       Right (Nothing)-> return list
       Left a-> return ((Left a):list)
       ) [] myFiles
-  
+
 deleteCharacter :: RPGState -> String -> IO (Either String String)
 deleteCharacter rs@(RPGState {fp=fp}) name=do
-  files<-listFiles rs backupExtension 
+  files<-listFiles rs backupExtension
   let myFiles= filter (isPrefixOf name) files
   catchIOError (do
     mapM_ (removeFile . (combine fp)) myFiles
     return $ Right (printf "Character %s deleted" name)
     )
-    (\e->return $ Left (printf "The character couldn't be deleted: %s" (show e))) 
+    (\e->return $ Left (printf "The character couldn't be deleted: %s" (show e)))
 
 deleteGame :: RPGState -> String -> IO (Either String String)
 deleteGame rs name=do
-  file<-getFile name backupExtension rs 
+  file<-getFile name backupExtension rs
   catchIOError (do
     if hasExtension name
       then do
         removeFile file
         return $ Right "Game deleted"
       else
-        withBackupCond rs (takeFileName file) 
+        withBackupCond rs (takeFileName file)
           (\(BackupState{bckCharacter=c})->do
             l<-saveCharacter rs c
             case l of
               Right _-> return $ Right "Game deleted"
               a->return a)
-    
+
     )
-    (\e->return $ Left (printf "The game couldn't be deleted: %s" (show e))) 
+    (\e->return $ Left (printf "The game couldn't be deleted: %s" (show e)))
 
 
 listCharacters :: RPGState -> IO ([String])
 listCharacters rs= do
-  files<-listFiles rs backupExtension 
-  return $ filter (not . hasExtension) $ map dropExtension files  
-  
+  files<-listFiles rs backupExtension
+  return $ filter (not . hasExtension) $ map dropExtension files
+
 saveBackup :: RPGState -> IO (Either String (String,String))
 saveBackup (RPGState {rpgCharacter=Nothing}) = return $ Right ("Nothing to save","")
 saveBackup rs@(RPGState {rpgCharacter=(Just c1)}) = do
   fileNameB<-getBackupFileForCharacter rs c1
   saveGame rs fileNameB
-  
+
 saveGame :: RPGState -> String -> IO (Either String  (String,String))
-saveGame rs fileNameB= do  
+saveGame rs fileNameB= do
   catchIOError (
       do
         bs<-toBackupState rs
@@ -168,7 +168,7 @@ saveGame rs fileNameB= do
         return (Right (printf "Game saved to %s" fileNameB,dropExtension $ takeFileName fileNameB))
       )
       (\e -> return (Left (printf "Could not save game: %s" (show e))))
-      
+
 loadBackup :: RPGState -> String -> IO (Either String (String,RPGState))
 loadBackup rs name = do
     withBackupCond rs (addExtension name backupExtension)
@@ -181,9 +181,9 @@ loadBackup rs name = do
 doesCharacterExists :: RPGState -> String -> IO (Bool)
 doesCharacterExists rs name=do
   fileName<-getFile name backupExtension rs
-  doesFileExist fileName 
-  
-  
+  doesFileExist fileName
+
+
 doesCurrentGameExists :: RPGState -> String -> IO(Bool)
 doesCurrentGameExists rs shortName =do
   fileName<-getFile shortName backupExtension rs
@@ -197,20 +197,20 @@ doesCurrentGameExists rs shortName =do
       return $ case e of
         Right b->b
         Left _->False
-    else return False 
-  
-  
+    else return False
+
+
 saveCharacter :: RPGState -> Character -> IO (Either String String)
 saveCharacter rs c=do
   fileName<-getFile (name c) backupExtension rs
   catchIOError (do
     t<-getCurrentTime
-    let bs=(BackupState t c Nothing)  
+    let bs=(BackupState t c Nothing)
     writeFile fileName (show bs)
     return (Right $ "Character saved to "++fileName)
     )
-    (\e -> return (Left $ printf "Could not save character: %s" (show e)))  
-    
+    (\e -> return (Left $ printf "Could not save character: %s" (show e)))
+
 readF :: (MonadIO m) => RPGState ->  String -> (String -> IO (Either String a)) -> (a -> m b) -> m (Either String b)
 readF (RPGState {fp=fp}) shortName act act2 = do
   let sn'=if (takeExtension shortName)==("."++backupExtension)
@@ -219,7 +219,7 @@ readF (RPGState {fp=fp}) shortName act act2 = do
   let fileName=fp </> sn'
   exists<-liftIO $ doesFileExist fileName
   if exists
-    then do 
+    then do
       a <- liftIO $ catchIOError (do
         a<- withFile fileName ReadMode (\h -> do
             s<-hGetContents h
@@ -232,7 +232,7 @@ readF (RPGState {fp=fp}) shortName act act2 = do
           d<-act2 b
           return $ Right d
         Left c -> return $ Left c
-    else return $ Left (printf "File %s does not exist" fileName)    
+    else return $ Left (printf "File %s does not exist" fileName)
 
 withBackup rs name m = do
   readF rs name readBackup
@@ -248,10 +248,10 @@ withBackupCond rs name m = do
   return $ case ei of
     Right (Left a)->Left a
     Right (Right a)->Right a
-    Left a -> Left a    
+    Left a -> Left a
 
 
-readBackup s=do 
+readBackup s=do
   catchIOError (do
     c<-(readIO s)::IO BackupState
     return $ Right c
@@ -260,4 +260,4 @@ readBackup s=do
 
 
 
-  
+
