@@ -21,11 +21,11 @@ profileTests=TestList (map (\p -> mkTest ("testCharacterRS" ++ (fst p)) (testCha
 mkTest s f = TestLabel s (TestCase f)
 
 testCharacterRS pName= do
-	sg<-getStdGen
-	mt<-evalRandT (generateTraits $ fromJust $ profileByName pName) (ProductionRandom sg)
-	let (p,_)=firstProfileAndRatio mt
-	assertEqual ("First Profile is "++(fst p)++" instead of "++pName) pName (fst p)
-	let c=Character "Test" Male (getDefaultHealth mt) mkEmptyInventory [] []
-	let s=show c
-	let c2=(read s)::Character
-	assertBool "Reading character from show did not give same" ((show c2)==s)
+        sg<-getStdGen
+        mt<-evalRandT (generateTraits $ fromJust $ profileByName pName) (ProductionRandom sg)
+        let (p,_)=firstProfileAndRatio mt
+        assertEqual ("First Profile is "++(fst p)++" instead of "++pName) pName (fst p)
+        let c=Character "Test" Male (getDefaultHealth mt) mkEmptyInventory [] []
+        let s=show c
+        let c2=(read s)::Character
+        assertBool "Reading character from show did not give same" ((show c2)==s)

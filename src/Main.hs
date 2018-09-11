@@ -26,9 +26,9 @@ import Test.HUnit (runTestTT,Test(TestList),Counts(..))
 -- | main entry point
 main :: IO()
 main = do
-	gs<-initialGameStateInApp
-	start (WList ["Welcome to Mazes of Monad, JP Moresmau's Role-Playing Game","If you don't know what to type, try help!"], gs)
-	return ()
+        gs<-initialGameStateInApp
+        start (WList ["Welcome to Mazes of Monad, JP Moresmau's Role-Playing Game","If you don't know what to type, try help!"], gs)
+        return ()
 
 -- | statistics on a game
 stats :: FilePath -> IO(GameStats)
@@ -37,21 +37,21 @@ stats fp=fileGameStats fp
 -- | run unit tests
 test :: IO Test.HUnit.Counts
 test = do
-	runTestTT (concatTestList [
-		listsTests,
-		numbersTests,
-		randomTests,
-		characterTests,
-		fightTests,
-		inventoryTests,
-		profileTests,
-		tradeTests,
-		saveTests,
-		actionsTests,
-		npcTests,
-		itemTests,
-		magicTests,
-		mazeObjectsTests,
-		arenaTests])
+        runTestTT (concatTestList [
+                listsTests,
+                numbersTests,
+                randomTests,
+                characterTests,
+                fightTests,
+                inventoryTests,
+                profileTests,
+                tradeTests,
+                saveTests,
+                actionsTests,
+                npcTests,
+                itemTests,
+                magicTests,
+                mazeObjectsTests,
+                arenaTests])
 
-concatTestList tl = TestList (concat (map (\(TestList ts) -> ts ) tl))	
+concatTestList tl = TestList (concat (map (\(TestList ts) -> ts ) tl))        
