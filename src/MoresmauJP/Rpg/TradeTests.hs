@@ -11,7 +11,7 @@ import MoresmauJP.Rpg.Trade
 
 import Test.HUnit
 
-        
+
 tradeTests=TestList [testEmpty,testBuy,testBuyTooDear,testBuyHandPremium,
         testSell,testSellTooDear,testSellHandPremium,
         testExchange,testSellNoBag]
@@ -35,15 +35,15 @@ testBuy=TestLabel "Test Buy" (TestCase (do
         assertEqual "merchant gold not equals to 10" 10 (getGold $ inventory merchant2)
         assertEqual "JP does not have the sword!" (Bag 1,sword) (head $ listCarriedItems $ inventory jp2)
         assertEqual "Dropped is not null" 0 (length dropped)
-        ))        
-        
+        ))
+
 testBuyTooDear=TestLabel "Test Buy Too Dear" (TestCase (do
         let jp=(createTestChar "JP"){inventory=(makeEmptyInventory 10 1)}
         let Right (i,_)=takeItem mkEmptyInventory sword (Bag 1)
         let merchant=(createTestChar "Merchant"){inventory=i}
         assertEqual "Non empty Buy" 0 (length $ listTradeItems jp merchant Buy (Success Standard 1))
-        ))        
-        
+        ))
+
 testBuyHandPremium=TestLabel "Test Buy Hand Premium" (TestCase (do
         let jp=(createTestChar "JP"){inventory=(makeEmptyInventory 10 20)}
         let Right (i,_)=takeItem mkEmptyInventory sword RightHand
@@ -51,7 +51,7 @@ testBuyHandPremium=TestLabel "Test Buy Hand Premium" (TestCase (do
         let buyops=listTradeItems jp merchant Buy (Success Standard 1)
         assertEqual "Non single Buy" 1 (length buyops)
         assertEqual "Non equal to sword" (ToBuy (RightHand,sword) 14) (head buyops)
-        ))        
+        ))
 
 testSell=TestLabel "Test Sell" (TestCase (do
         let Right (i,_)=takeItem mkEmptyInventory sword (Bag 1)
@@ -60,15 +60,15 @@ testSell=TestLabel "Test Sell" (TestCase (do
         let sellops=listTradeItems jp merchant Sell (Success Standard 1)
         assertEqual "Non single Sell" 1 (length sellops)
         assertEqual "Non equal to sword" (ToSell (Bag 1,sword) 10) (head sellops)
-        ))        
-        
+        ))
+
 testSellTooDear=TestLabel "Test Sell Too Dear" (TestCase (do
         let Right (i,_)=takeItem mkEmptyInventory sword (Bag 1)
         let jp=(createTestChar "JP"){inventory=i}
         let merchant=(createTestChar "Merchant"){inventory=(makeEmptyInventory 10 1)}
         assertEqual "Non empty Sell" 0 (length $ listTradeItems jp merchant Sell (Success Standard 1))
-        ))                
-        
+        ))
+
 testSellHandPremium=TestLabel "Test Sell Hand Premium" (TestCase (do
         let Right (i,_)=takeItem mkEmptyInventory sword RightHand
         let jp=(createTestChar "JP"){inventory=i}
@@ -76,8 +76,8 @@ testSellHandPremium=TestLabel "Test Sell Hand Premium" (TestCase (do
         let sellops=listTradeItems jp merchant Sell (Success Standard 1)
         assertEqual "Non single Sell" 1 (length sellops)
         assertEqual "Non equal to sword" (ToSell (RightHand,sword) 14) (head sellops)
-        ))        
-        
+        ))
+
 testExchange=TestLabel "Test Exchange" (TestCase (do
         let Right (i,_)=takeItem mkEmptyInventory sword (Bag 1)
         let jp=(createTestChar "JP"){inventory=i}
@@ -96,7 +96,7 @@ testExchange=TestLabel "Test Exchange" (TestCase (do
         assertBool "dropped does not contain dagger" (elem dagger dropped)
         assertBool "dropped does not contain hatchet" (elem hatchet dropped)
         ))
-        
+
 testSellNoBag=TestLabel "Test Sell No Bag" (TestCase (do
         let Right (i,_)=takeItem mkEmptyInventory minorHealingPotion (Bag 1)
         let jp=(createTestChar "JP"){inventory=i}

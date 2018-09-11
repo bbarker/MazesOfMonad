@@ -12,7 +12,7 @@ import Test.HUnit
 
 inventoryTests = TestList [
                 testInventory,testInventory2Hands,testInventoryPick2Hands,testMakeFullInventory]
-                
+
 
 testInventory = TestLabel "Test Inventory" (TestCase (do
         let i1=mkEmptyInventory
@@ -28,9 +28,9 @@ testInventory = TestLabel "Test Inventory" (TestCase (do
         assertEqual "2nd Head of items is not left hand and empty" (LeftHand,Nothing) (head $ tail items)
         let Right(_,item3)=dropItem i3 RightHand
         assertBool "item from inventory is not Just" (isJust item3)
-        assertEqual "item dropped is not sword" (Just sw) (item3) 
+        assertEqual "item dropped is not sword" (Just sw) (item3)
         ))
-        
+
 testInventory2Hands=TestLabel "Test Inventory 2 hands" (TestCase (do
                 let i1=mkEmptyInventory
                 let sw=twoHandedWord
@@ -62,10 +62,10 @@ testInventory2Hands=TestLabel "Test Inventory 2 hands" (TestCase (do
                 assertEqual "no sword in bag 1" sw (fromJust mi)
                 let (Right mi2)=getCarriedItem i7 (Bag 2)
                 assertBool "something in bag 2" (not $ isJust mi2)
-                
-        ))        
-        
-testInventoryPick2Hands=TestLabel "Test Inventory Pick 2 handed weapon" (TestCase (do        
+
+        ))
+
+testInventoryPick2Hands=TestLabel "Test Inventory Pick 2 handed weapon" (TestCase (do
                 let i1=mkEmptyInventory
                 let sw=twoHandedWord
                 let sw1=sword
@@ -85,7 +85,7 @@ testInventoryPick2Hands=TestLabel "Test Inventory Pick 2 handed weapon" (TestCas
                 assertEqual "not carrying sword in bag" (Right $ Just sw1) (getCarriedItem i4 (Bag 1))
                 assertEqual "not carrying dagger in bag" (Right $ Just sw2) (getCarriedItem i4 (Bag 2))
         ))
-        
+
 testMakeFullInventory= TestLabel "Test makeFullInventory" (TestCase (do
         let pos1=[(RightHand,sword),(Body,leatherArmor),(Bag 1,minorHealingPotion)]
         let i1=makeFullInventory pos1 1 0
@@ -100,4 +100,3 @@ testMakeFullInventory= TestLabel "Test makeFullInventory" (TestCase (do
         assertEqual "not carrying 2hand sword in left hand" (Right $ Just twoHandedWord) (getCarriedItem i2 LeftHand)
         assertEqual "not carrying leatherarmor on body" (Right $ Just leatherArmor) (getCarriedItem i2 Body)
         ))
-                        

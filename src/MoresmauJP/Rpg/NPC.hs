@@ -35,7 +35,7 @@ troll=NPCTemplate {
                         (Just club,2),
                         (Just bigclub,3)]
                         )],
-        possibleGold=(0,10)                
+        possibleGold=(0,10)
         }
 
 goblin=NPCTemplate {
@@ -67,7 +67,7 @@ goblin=NPCTemplate {
                         ]
                         )
                 ],
-        possibleGold=(0,30)        
+        possibleGold=(0,30)
         }
 
 kobold=NPCTemplate {
@@ -88,8 +88,8 @@ kobold=NPCTemplate {
                         (Just sword,1),
                         (Just dagger,3),
                         (Just hatchet,1)]
-                        )], 
-        possibleGold=(0,7)                
+                        )],
+        possibleGold=(0,7)
         }
 
 
@@ -108,7 +108,7 @@ giantRat=NPCTemplate {
                 (Charisma,(1,2)),
                 (Perception,(4,8))],
         possibleItems=[],
-        possibleGold=(0,0)        
+        possibleGold=(0,0)
         }
 
 snake=NPCTemplate {
@@ -125,9 +125,9 @@ snake=NPCTemplate {
                 (Charisma,(1,4)),
                 (Perception,(8,10))],
         possibleItems=[],
-        possibleGold=(0,0)        
-        }        
-        
+        possibleGold=(0,0)
+        }
+
 scorpion=NPCTemplate {
         typeName="Giant Scorpion",
         creatureType=Animal,
@@ -142,13 +142,13 @@ scorpion=NPCTemplate {
                 (Charisma,(1,4)),
                 (Perception,(10,14))],
         possibleItems=[],
-        possibleGold=(0,0)        
-        }                
-        
+        possibleGold=(0,0)
+        }
+
 vampire=NPCTemplate {
         typeName="Vampire",
         creatureType=Humanoid,
-        attitudeRange=(3,8),        
+        attitudeRange=(3,8),
         traitRanges=[
                 (Strength,(12,18)),
                 (Dexterity,(10,14)),
@@ -159,13 +159,13 @@ vampire=NPCTemplate {
                 (Charisma,(10,15)),
                 (Perception,(6,10))],
         possibleItems=[],
-        possibleGold=(10,60)        
+        possibleGold=(10,60)
         }
-        
+
 ghoul=NPCTemplate {
         typeName="Ghoul",
         creatureType=Humanoid,
-        attitudeRange=(1,6),        
+        attitudeRange=(1,6),
         traitRanges=[
                 (Strength,(8,14)),
                 (Dexterity,(8,12)),
@@ -176,13 +176,13 @@ ghoul=NPCTemplate {
                 (Charisma,(4,8)),
                 (Perception,(3,7))],
         possibleItems=[],
-        possibleGold=(0,20)        
+        possibleGold=(0,20)
         }
 
 outlaw=NPCTemplate {
         typeName="Outlaw",
         creatureType=Human,
-        attitudeRange=(8,12),        
+        attitudeRange=(8,12),
         traitRanges=[
                 (Strength,(8,14)),
                 (Dexterity,(8,14)),
@@ -213,13 +213,13 @@ outlaw=NPCTemplate {
                         (Just leathercap,1),
                         (Just helmet,1)
                         ])],
-                possibleGold=(0,50)                
+                possibleGold=(0,50)
         }
 
 blackKnight=NPCTemplate {
         typeName="Black Knight",
         creatureType=Human,
-        attitudeRange=(5,10),        
+        attitudeRange=(5,10),
         traitRanges=[
                 (Strength,(14,18)),
                 (Dexterity,(14,18)),
@@ -252,13 +252,13 @@ blackKnight=NPCTemplate {
                         (Just helmet,2),
                         (Just heaume,1)
                         ])],
-        possibleGold=(10,30)        
+        possibleGold=(10,30)
         }
-        
+
 darkElf=NPCTemplate {
         typeName="Dark Elf",
         creatureType=Human,
-        attitudeRange=(5,10),        
+        attitudeRange=(5,10),
         traitRanges=[
                 (Strength,(12,18)),
                 (Dexterity,(16,22)),
@@ -283,13 +283,13 @@ darkElf=NPCTemplate {
                         (Just leatherArmor,1),
                         (Nothing,2)        ]
                         )],
-        possibleGold=(10,30)        
-        }        
+        possibleGold=(10,30)
+        }
 
 minotaur=NPCTemplate {
         typeName="Minotaur",
         creatureType=Animal,
-        attitudeRange=(2,5),        
+        attitudeRange=(2,5),
         traitRanges=[
                 (Strength,(14,22)),
                 (Dexterity,(10,16)),
@@ -327,7 +327,7 @@ peddler=NPCTemplate {
                         (Just leatherArmor,1)
                         ]
                         )],
-        possibleGold=(100,200)                
+        possibleGold=(100,200)
         }
 
 
@@ -339,15 +339,15 @@ templateAttitudeNoChange=[peddler]
 
 getNPCOccurences :: Int -> [(NPCTemplate,Int)]
 getNPCOccurences characterLevel=
-        let 
+        let
                 totalTemplates=length allNPCTemplates
                 ponderedLevel=div (characterLevel * 8) 10
                 likelyhood npc=(npc,max 1 (totalTemplates - (2 * (abs ((templateLevel npc) - ponderedLevel)))))
         in map likelyhood allNPCTemplates
-                
+
 templateLevel :: NPCTemplate -> Int
 templateLevel t=avg $ map (\(_,(low,high))-> div (low+high) 2) (traitRanges t)
-                
+
 type CharacteristicRanges=Array Characteristic (Int,Int)
 
 data NPCTemplate = NPCTemplate {
@@ -388,7 +388,7 @@ getInitialAttitude NPCCharacter{npcAttitude=att}=do
                 Failure {}        -> NPCFight
                 Success        {}        -> NPCWait)
 
-data FightAttitude = ContinueFight | OfferBribe Int | PrayForClemency | TryEscape 
+data FightAttitude = ContinueFight | OfferBribe Int | PrayForClemency | TryEscape
         deriving (Show,Read,Eq)
 
 data FightInfo=FightInfo {
@@ -429,7 +429,7 @@ addToFightInfo m1 (c,v)=let
                 Just v1 -> M.insert c (v+v1) m1
 
 getFightAttitudes :: NPCCharacter -> FightInfo -> [(FightAttitude,Int)]
-getFightAttitudes npc fi=let 
+getFightAttitudes npc fi=let
         fight=21-(npcAttitude npc)
         percentPhysical=getCurrentPercentOfNormal (npcCharacter npc) Physical
         percentMental=getCurrentPercentOfNormal (npcCharacter npc) Mental
@@ -447,7 +447,7 @@ getFightAttitudes npc fi=let
                         then (10 - (percentLoss `div` 10))
                         else 0
                 )
-        pray=if (hasPrayed fi || (npcType npc)==Animal) 
+        pray=if (hasPrayed fi || (npcType npc)==Animal)
                 then 0
                 else div escape 2
         gold=getGold $ inventory $ npcCharacter npc
@@ -465,11 +465,11 @@ getFightAttitude npc fi = do
                 _ -> fi
         return (fa,fi2)
 
-data InteractionToNPC=Ignore | Fight | Trade | Convert | Steal 
+data InteractionToNPC=Ignore | Fight | Trade | Convert | Steal
         deriving (Show,Read,Eq,Enum,Bounded)
 
 possibleNPCInteractions :: NPCCharacter -> [InteractionToNPC]
-possibleNPCInteractions NPCCharacter{npcType=tp}=case tp of 
+possibleNPCInteractions NPCCharacter{npcType=tp}=case tp of
         Animal                 -> [Ignore .. Fight]
         Humanoid         -> [Ignore .. Trade]
         Human                 -> [Ignore .. Steal]
@@ -512,8 +512,8 @@ generateFromTemplate template attitudeModifier=do
                 affects=[],
                 spells=[]
         }) (creatureType template) attitudeLevel)
-        
+
 generateFromRange :: (MonadRandom m)=>(Characteristic,(Int,Int))->m (Characteristic,Rating)
-generateFromRange (c,(low,high))=do 
+generateFromRange (c,(low,high))=do
         rnd<-getRandomRange (low,high)
         return (c,mkRating rnd)

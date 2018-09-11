@@ -12,15 +12,15 @@ import MoresmauJP.Util.Lists
 import MoresmauJP.Util.Random
 
 import Text.Printf
-        
+
 type MagicStatus a= ((a,a),Bool)
-        
+
 allSpells :: [Spell]
 allSpells= [
         Spell "Feel Better" Physical Recovery Permanent
         ,Spell "Fire Ball" Physical Negative Permanent
         ,Spell "Nimble Fingers" Dexterity Positive Temporary
-        ,Spell "Greasy Fingers" Dexterity Negative Temporary 
+        ,Spell "Greasy Fingers" Dexterity Negative Temporary
         ,Spell "Madness" Mental Negative Permanent
         ,Spell "Sanity" Mental Recovery Permanent
         ,Spell "Focus... Focus... Focus..." Willpower Positive Temporary
@@ -30,7 +30,7 @@ allSpells= [
         ,Spell "Troll Face" Charisma Negative Temporary
         ,Spell "Drop dead gorgeous" Charisma Positive Temporary
         ]
-        
+
 spellToAffect :: Spell -> RollResult -> Int -> Affect
 spellToAffect spell rr tc=let
         pt=resultMultiplierHigh (diff rr) rr
@@ -75,7 +75,7 @@ spellToMyselfEffect c s tc rr@(Success {})=
                         addMessage $ Message (c,s,Myself)
                         (a,_)<-recover c (impactedChar s) (diff rr)
                         return a
-        
+
 damagesFumble :: (MonadWriter ScreenMessages m) => Character -> Spell -> Int ->  RollResult  -> FumbleEvent -> m Character
 damagesFumble c s tc rr SpellBounce= do
         let c12=addAffect c (spellToAffect s (Success Standard (-diff rr)) tc)
@@ -96,13 +96,13 @@ damagesFumble c s _ _ IntelligenceLoss= do
 
 
 addMessage :: (MonadWriter ScreenMessages m)=> Message -> m ()
-addMessage =addScreenMessage . show 
-        
+addMessage =addScreenMessage . show
+
 spellToOpponent ::(MonadRandom m,MonadWriter ScreenMessages m)=> Character -> Character -> Spell -> Int -> m (MagicStatus Character)
 spellToOpponent c1 c2 s tc= do
         ((c1b,c2b),rr) <- compete c1 c2 spellcasting
         spellToOpponentEffect c1b c2b s tc rr
-        
+
 spellToOpponentEffect :: (MonadRandom m,MonadWriter ScreenMessages m) => Character -> Character -> Spell -> Int -> RollResult -> m (MagicStatus Character)
 spellToOpponentEffect c1 c2 s tc rr@(Failure {grade=Exceptional})=do
         fe<-randomPickp [minBound .. maxBound]
@@ -121,7 +121,7 @@ spellToOpponentEffect c1 c2 s tc rr@(Success {})=
                         addMessage $ Message (c1,s,Opponent)
                         let c2'=(addCharacteristic' c2 Current (impactedChar s) (-(diff rr)))
                         return ((c1,c2'),isOutOfService c2')
-                
+
 -- complexity
 -- danger
 -- curse: add difficulty to all actions

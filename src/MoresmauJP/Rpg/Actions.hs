@@ -31,14 +31,14 @@ roll :: (MonadRandom m) => (Int,Int) -> m Int
 roll (low,high)= getRandomRange (low,high)
 
 rolls :: (MonadRandom m) => Int -> (Int,Int) -> m [Int]
-rolls a (low,high)= replicateM a (roll (low,high)) 
+rolls a (low,high)= replicateM a (roll (low,high))
 
-action :: (MonadRandom m,MonadWriter ScreenMessages m) => Character -> [Characteristic] -> Difficulty -> m (Character,RollResult)        
+action :: (MonadRandom m,MonadWriter ScreenMessages m) => Character -> [Characteristic] -> Difficulty -> m (Character,RollResult)
 action c cs d= do
         r <- roll d20
         processAction c cs d r
 
-actionNoExperience :: (MonadRandom m,MonadWriter ScreenMessages m) => Character -> [Characteristic] -> Difficulty -> m RollResult        
+actionNoExperience :: (MonadRandom m,MonadWriter ScreenMessages m) => Character -> [Characteristic] -> Difficulty -> m RollResult
 actionNoExperience c cs d=liftM snd (action c cs d)
 
 diffResult :: (MonadRandom m,MonadWriter ScreenMessages m) => Character -> [Characteristic] -> Difficulty -> m Int
@@ -48,11 +48,11 @@ diffResult c cs d= do
         let myScore=avgCs+d
         return (myScore-r)
 
-diffResult' :: (MonadRandom m,MonadWriter ScreenMessages m) => Character -> [Characteristic] -> Difficulty -> (Int -> Int) -> m Int        
+diffResult' :: (MonadRandom m,MonadWriter ScreenMessages m) => Character -> [Characteristic] -> Difficulty -> (Int -> Int) -> m Int
 diffResult' c cs d f=do
         diff<-diffResult c cs d
         let diff'=f diff
-        return 
+        return
                 (if (diff<0)
                         then (-diff')
                         else diff')
@@ -61,10 +61,10 @@ competeWithDiff :: (MonadRandom m,MonadWriter ScreenMessages m) => Character -> 
 competeWithDiff c1 c2 cs d=do
         r <- roll d20
         processCompeteDiff c1 c2 cs r d
-        
+
 compete :: (MonadRandom m,MonadWriter ScreenMessages m) => Character -> Character-> [Characteristic] -> m ((Character,Character),RollResult)
 compete c1 c2 cs=competeWithDiff c1 c2 cs 0
-        
+
 processCompete :: (MonadWriter ScreenMessages m) => Character -> Character-> [Characteristic] -> Int -> m ((Character,Character),RollResult)
 processCompete c1 c2 cs r =processCompeteDiff c1 c2 cs r 0
 
@@ -77,13 +77,13 @@ processCompeteDiff c1 c2 cs r di= do
         (c1b,rr1) <- (processAction c1 cs d r)
         (c2b,_) <- (processAction c2 cs (-d) r)
         return ((c1b,c2b),rr1)
-        
+
 score :: Character -> [Characteristic] -> Int
-score c cs = avg (map (getCharacteristic' c Current) cs)        
-        
-processAction :: (MonadWriter ScreenMessages m) => Character-> [Characteristic] -> Difficulty -> Int -> m (Character,RollResult)        
+score c cs = avg (map (getCharacteristic' c Current) cs)
+
+processAction :: (MonadWriter ScreenMessages m) => Character-> [Characteristic] -> Difficulty -> Int -> m (Character,RollResult)
 processAction c cs d roll= do
-        let 
+        let
                 avgCs=score c cs
                 myScore=bindInt (1,20) (avgCs+d)
                 (rr,em)=evalResult roll myScore
@@ -94,13 +94,13 @@ processAction c cs d roll= do
                 augmented=filter (\(_,b)->b>0) $map (\(a,b,c)->(a,c-b)) $ zip3 allCharacteristics previousNormal newNormal
         mapM_ (\(a,b)->addScreenMessage (printf (msg b) (name c3) b (show a))) augmented
         return (c3,rr)
-        where 
+        where
                 msg 1="%s gains %d point in %s"
-                msg _="%s gains %d points in %s"        
+                msg _="%s gains %d points in %s"
 
 experienceGain :: Int -> Int -> Int -> Int
 experienceGain score expM l= div ((max 1 (div ((20-score)^2) 10)) * expM) l
-        
+
 evalResult:: Int -> Int -> RollResultExp
 evalResult roll score
         | roll==20                    = (Failure Exceptional (max 2 (roll-score)),1)
@@ -118,20 +118,20 @@ type Difficulty=Int
 type RollResultExp=(RollResult,ExperienceMultiplier)
 type ExperienceMultiplier=Int
 
-data DifficultyLevel=NearImpossible | VeryHard | Hard | RatherHard | Neutral 
+data DifficultyLevel=NearImpossible | VeryHard | Hard | RatherHard | Neutral
         | RatherEasy | Easy | VeryEasy | NearUnmissable
         deriving (Eq,Show,Read,Ord,Bounded,Enum)
 
 toIntLevel :: DifficultyLevel -> Difficulty
 toIntLevel level =3 * ((fromEnum level) - 4)
 
-data RollResult = 
+data RollResult =
         Failure {
                 grade::Grade,
-                diff::Int} 
+                diff::Int}
         | Success {
                 grade::Grade,
-                diff:: Int} 
+                diff:: Int}
         deriving (Show, Eq, Read)
 
 isSuccess :: RollResult -> Bool
@@ -150,8 +150,8 @@ resultMultiplier Exceptional i= fromIntegral i * 10
 
 {--
 resultMultiplierSc :: Grade -> Int -> Float
-resultMultiplierSc Standard i= fromIntegral $ div i 4 
-resultMultiplierSc Remarkable i= fromIntegral $ div i 2 
+resultMultiplierSc Standard i= fromIntegral $ div i 4
+resultMultiplierSc Remarkable i= fromIntegral $ div i 2
 resultMultiplierSc Exceptional i= fromIntegral i
 
 resultMultiplierScale :: Int -> RollResult -> Int
@@ -177,7 +177,7 @@ data Grade =
         | Exceptional
         deriving (Show,Enum,Read,Eq)
 
-        
+
 testRM = do
         mapM (s 10) [(Success x y) | x<-[Standard .. Exceptional],y<-[1,5,10,15,20]]
         where s i rr=do

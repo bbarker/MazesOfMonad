@@ -28,8 +28,8 @@ data Character = Character {
         , affects::[Affect]
         , spells::[Spell]
         } deriving (Eq,Show,Read)
-        
-data Gender = Male 
+
+data Gender = Male
         | Female
         deriving (Show, Read,Eq)
 
@@ -46,7 +46,7 @@ data Affect=Affect {
 data Characteristic = Strength | Dexterity | Constitution | Willpower
         | Intelligence | Balance | Charisma | Perception | Physical | Mental
         deriving (Show,Read,Eq,Enum,Bounded,Ord,Ix)
-        
+
 data RatingScoreType=Normal |
         Current |
         Experience
@@ -60,29 +60,29 @@ data Rating=Rating (Array RatingScoreType Int)
 
 instance Show Rating where
         show r=printf "%d/%d(%d)" (getR Current r) (getR Normal r) (getR Experience r)
-        
+
 instance Read Rating where
         readsPrec _ s= let
                 (_,_,after,(c:n:e:[]))= (s=~"([0-9]+)/([0-9]+)\\(([0-9]+)\\)") :: (String,String,String,[String])
                 in [(Rating (array (Normal,Experience) [(Normal,(read n)),(Current,(read c)),(Experience,(read e))]),after)]
-        
+
 data SpellImpact=Negative | Positive | Recovery
         deriving (Show,Read,Eq)
 
-data SpellDuration=Permanent | Temporary 
-        deriving (Show,Read,Eq)        
-        
+data SpellDuration=Permanent | Temporary
+        deriving (Show,Read,Eq)
+
 data Spell=Spell {
         spellName::String,
         impactedChar::Characteristic,
         impact::SpellImpact,
         spellDuration::SpellDuration
-        } deriving (Show,Read,Eq)        
-        
-        
+        } deriving (Show,Read,Eq)
+
+
 allCharacteristics= [Strength .. Perception]
 allHealth=[Physical .. Mental]
-                        
+
 getDefaultHealth :: CharacteristicRatings -> CharacteristicRatings
 getDefaultHealth crs=array (Strength,Mental) ((assocs crs) ++ [(Physical,(mkRating $ getCharacteristic crs Normal Constitution)),(Mental,(mkRating $ getCharacteristic crs Normal Balance))])
 
@@ -93,19 +93,19 @@ isOutOfService :: Character -> Bool
 isOutOfService a = (isDead a) || (isMad a)
 
 isDead :: Character -> Bool
-isDead a= (getCharacteristic' a Current Physical) <= 0  
+isDead a= (getCharacteristic' a Current Physical) <= 0
 
 isMad :: Character -> Bool
-isMad a= (getCharacteristic' a Current Mental ) <= 0  
+isMad a= (getCharacteristic' a Current Mental ) <= 0
 
 characterLevel :: Character -> Int
-characterLevel c=(avg $ map (getCharacteristic' c Normal) 
+characterLevel c=(avg $ map (getCharacteristic' c Normal)
                 -- take only 4 best characteristics
                 (take 4 (sortBy (comparing (\ch-> (-(getCharacteristic' c Normal ch)))) allCharacteristics)))
         + (div (length $ spells c) 3) -- ponder with spells
         + (div (length $ listCarriedItems $ inventory c) 3) -- ponder with items
         - (if (length $ listActiveItems $ inventory c) == 0 then 2 else 0) -- nothing active is a huge problem
-        
+
 
 mkRating :: Int -> Rating
 mkRating v = Rating (array (Normal,Experience) [(Normal,v),(Current, v),(Experience, 0)])
@@ -114,19 +114,19 @@ getR :: RatingScoreType -> Rating -> Int
 getR rst (Rating array)= array ! rst
 
 addCharacteristic :: CharacteristicRatings -> RatingScoreType -> Characteristic -> Int -> CharacteristicRatings
-addCharacteristic cr rst char inc= let 
+addCharacteristic cr rst char inc= let
         (Rating arr)=cr ! char
         oldVal=arr ! rst
-        arr2=(if (rst==Experience) 
+        arr2=(if (rst==Experience)
                 then nextLevel
                 else id) (arr // [(rst,max 0 (oldVal+inc))])
         in cr // [(char,Rating arr2)]
 
 setCharacteristic :: CharacteristicRatings -> RatingScoreType -> Characteristic -> Int -> CharacteristicRatings
-setCharacteristic cr rst char inc= let 
+setCharacteristic cr rst char inc= let
         (Rating arr)=cr ! char
-        arr2=(if (rst==Experience) 
-                then nextLevel 
+        arr2=(if (rst==Experience)
+                then nextLevel
                 else id) (arr // [(rst,inc)])
         in cr // [(char,Rating arr2)]
 
@@ -137,12 +137,12 @@ nextLevel arr = let
         nextLevelRequired=round (((fromIntegral normal) ** 3) / 3)
         in if (experience>nextLevelRequired)
                 then
-                        let 
+                        let
                                 experience'=experience-nextLevelRequired
                                 normal'=normal+1
                                 current=(arr ! Current) +1
                                 arr2=array (Normal,Experience) [(Normal,normal'),(Current, current),(Experience, experience')]
-                        in nextLevel arr2         
+                        in nextLevel arr2
                 else
                         arr
 
@@ -194,9 +194,9 @@ expireAffects c@(Character{affects=a}) tc=let
         (a',a'')=partition (\x->(untilTick x)>tc) a
         c1=foldl removeAffect c a''
         in (c1{affects=a'},map liftDescription a'')
-        
-        
-        
+
+
+
 recover :: (MonadWriter ScreenMessages m) => Character
         -> Characteristic
         -> Int
@@ -209,33 +209,33 @@ recover c ch n=do
                 diff = updated-current
         when (diff>0) (addScreenMessage (printf "You recover %s!" (points ch diff)))
         return (setCharacteristic' c Current ch updated,(updated-current))
-        
-        
+
+
 reflective :: Character -> String
 reflective c=case gender c of
         Male -> "himself"
         Female -> "herself"
-        
+
 possessive :: Character -> String
 possessive c=case gender c of
         Male -> "his"
         Female -> "her"
-        
+
 points :: Characteristic -> Int -> String
 points c diff=let
-        end=if diff==1 
+        end=if diff==1
                         then "point"
                         else "points"
-        in (printf ("%d %s " ++ end) diff (show c))        
-        
+        in (printf ("%d %s " ++ end) diff (show c))
+
 restoreWithTime :: Character -> Int -> Int -> Character
 restoreWithTime c tickCount toAdd= restoreWithTimeC (restoreWithTimeC c Physical Constitution tickCount toAdd) Mental Balance tickCount toAdd
-        
+
 restoreWithTimeC :: Character -> Characteristic -> Characteristic -> Int -> Int -> Character
-restoreWithTimeC c ch1 ch2 tickCount tickToAdd=let 
+restoreWithTimeC c ch1 ch2 tickCount tickToAdd=let
         current = getCharacteristic' c Current ch1
         normal = getCharacteristic' c Normal ch1
-        in if (current>0 && current<normal) 
+        in if (current>0 && current<normal)
                 then let
                         current2=getCharacteristic' c Current ch2
                         val=(max 1 (25-current2)) * 20
@@ -244,4 +244,3 @@ restoreWithTimeC c ch1 ch2 tickCount tickToAdd=let
                         toAdd=min (normal-current) (next-prev)
                         in addCharacteristic' c Current ch1 toAdd
                 else c
-        

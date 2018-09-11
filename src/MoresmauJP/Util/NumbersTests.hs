@@ -11,7 +11,7 @@ testAverage=TestLabel "testAverage" (TestCase (do
         let ls=[1,2,3]
         assertEqual "average is not 2" 2 (avg ls)
         ))
-        
+
 testBindInt=TestLabel "testBindInt" (TestCase (do
         assertEqual "bind low is not 0" 1 (bindInt (1,19) 0)
         assertEqual "bind normal is not 10" 10 (bindInt (1,19) 10)

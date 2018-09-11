@@ -14,7 +14,7 @@ import MoresmauJP.Util.Random
 
 import Text.Printf
 
-sword::ItemType                
+sword::ItemType
 sword=Weapon "Sword" 2 6 1 10
 twoHandedWord=Weapon "2 Handed Sword" 4 12 2 20
 dagger=Weapon "Dagger" 1 4 1 5
@@ -76,7 +76,7 @@ trapOccurences :: [(ItemType,Int)]
 trapOccurences = [(trapDoor,4),
                 (dartLauncher,3),
                 (boulderFall,2)]
-        
+
 isWeapon :: ItemType -> Bool
 isWeapon (Weapon {})=True
 isWeapon _ =False
@@ -87,16 +87,16 @@ isProtective (Shield {})=True
 isProtective (Helmet {})=True
 isProtective _ =False
 
-        
+
 isTrap :: ItemType -> Bool
 isTrap (Trap{})=True
-isTrap _=False        
-        
+isTrap _=False
+
 canUseItem :: ItemType -> Bool
 canUseItem (Potion {})=True
 canUseItem (Scroll {})=True
 canUseItem _=False
-        
+
 useItemEffect :: (MonadRandom m,MonadWriter ScreenMessages m)=>ItemType -> Character -> m (Maybe (Character,Bool))
 useItemEffect (Potion{potionType=(HealingPotion n)}) c1= do
         (c2,rr)<-action c1 medecine (toIntLevel Neutral)
@@ -115,7 +115,7 @@ useItemEffect (Scroll{spellType=s}) c1@(Character {spells=knownSpells})= do
                         return (Just (c1,False))
                 else do
                         (c2,rr)<-action c1 spelllearning (toIntLevel RatherHard)
-                        case rr of 
+                        case rr of
                                 Success{}->do
                                         addScreenMessage (printf "You learn the spell %s" s)
                                         return (Just (c2{spells=knownSpells++(filter ((s ==) . spellName) allSpells)},True))

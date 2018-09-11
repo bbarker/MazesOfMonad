@@ -55,7 +55,7 @@ screenInteract' c2 ss= do
         initial<-getInitialAttitude c2
         (w,msgs)<-case initial of
                 NPCFight -> do
-                        (w,msgs)<-runWriterT fightInArena 
+                        (w,msgs)<-runWriterT fightInArena
                         return (w, (printf "The %s attacks!" (name $ npcCharacter c2)):msgs)
                 NPCWait -> runWriterT chooseAction
                 NPCTrade ->runWriterT tradeInArena
@@ -71,7 +71,7 @@ chooseAction = do
         let (Arena{arenaOpponent=npc}) = gsData gs
         return (getShowCombo ["What do you want to do?"] (possibleNPCInteractions npc) chooseF)
 
-chooseF::ComboResult InteractionToNPC -> WScreenT Arena 
+chooseF::ComboResult InteractionToNPC -> WScreenT Arena
 chooseF (Exact Fight)=fightInArena
 chooseF (Exact Trade)=tradeInArena
 chooseF (Exact Convert)=convertInArena
@@ -81,14 +81,14 @@ chooseF _=do
         let ar = gsData gs
         put (gs{gsData=ar{es=Just Finished},screen=Nothing})
         return WNothing
-        
-tradeInArena :: WScreenT Arena        
+
+tradeInArena :: WScreenT Arena
 tradeInArena=do
         gs <- get
         let (Arena{arenaCharacter=c1}) = gsData gs
         let gold=printf "You have %d gold coins" (getGold $ inventory c1)
         return (getShowCombo [gold,"Choose trade operation"] [Buy .. Exchange] tradeInArena')
-        
+
 tradeInArena' :: ComboResult TradeAction -> WScreenT Arena
 tradeInArena' Empty = chooseAction
 tradeInArena' (Unknown _)= chooseAction
@@ -105,11 +105,11 @@ tradeInArena' (Exact action)= do
                         w<-tradeInArena
                         return $ combineWidget (WText (printf "No good deal you can %s" (show action))) w
                 else
-                        return (getMappedCombo 
+                        return (getMappedCombo
                                 ppTradeOperation'
                                 [(printf "What do you want to %s" (show action))]
                                 ops tradeChoice)
-        
+
 tradeChoice :: ComboResult TradeOperation -> WScreenT Arena
 tradeChoice Empty = tradeInArena
 tradeChoice (Unknown _)= tradeInArena
@@ -123,17 +123,17 @@ tradeChoice (Exact op)=do
         let npcPos=getNpcPosition op (inventory $ npcCharacter npc)
         if (null possiblePos)
                 then
-                        tradeOperation op npcPos Nothing 
+                        tradeOperation op npcPos Nothing
                 else
                         return (getMappedCombo ppInventoryPosition' ["Where do you want to put the item?"] possiblePos (tradeChoice' op npcPos))
-        
 
-        
+
+
 tradeChoice' :: TradeOperation -> Maybe Position -> ComboResult (Position,Maybe ItemType) -> WScreenT Arena
 tradeChoice' _ _ Empty = tradeInArena
 tradeChoice' _ _ (Unknown _) = tradeInArena
 tradeChoice' op posNpc (Exact pos) = tradeOperation op posNpc (Just $ fst pos)
-        
+
 tradeOperation :: TradeOperation -> Maybe Position -> Maybe Position -> WScreenT Arena
 tradeOperation op posNpc posC = do
         gs <- get
@@ -148,7 +148,7 @@ arenaTick :: Arena -> WriterT ScreenMessages (RandT (StateT (GameState Arena) IO
 arenaTick ar=do
         gs <- get
         put gs{gsData=ar{arenaTickCount=((arenaTickCount ar)+1)}}
-        
+
 fightInArena :: WScreenT Arena
 fightInArena =         do
         gs <- get
@@ -231,7 +231,7 @@ prayResponse True= do
         put (gs{gsData=ar2{es=Just Finished},screen=Nothing})
         let txt=printf "You let the %s go!" (name $ npcCharacter c2)
         return (WText txt)
-        
+
 
 castInArena :: WScreenT Arena
 castInArena = do
@@ -260,7 +260,7 @@ castInArena' (Exact spell)=do
                         do
                         let (status,txt)=if (isDead c1b)
                                         then (Death,"You're killed!")
-                                        else if (isMad c1b) 
+                                        else if (isMad c1b)
                                                 then (Death,"You become mad!")
                                                 else (Victory,"You triumph!")
                         put (gs{gsData=ar2{es=Just status},screen=Nothing})
@@ -282,11 +282,11 @@ prayerInArena = do
                 Failure {grade=Exceptional}->  do
                         let npc3=npc2{npcAttitude=1}
                         put (gs{gsData=ar2{arenaOpponent=npc3,chToHit=False}})
-                        w<-fightInArena' 
+                        w<-fightInArena'
                         return (combineWidget (WText (printf "The %s doesn't like your arguments at all!" (name $ npcCharacter c2))) w)
                 Failure {}->do
                         put (gs{gsData=ar2{chToHit=False}})
-                        w<-fightInArena' 
+                        w<-fightInArena'
                         return (combineWidget (WText (printf "Your prayer failed to convince the %s!" (name c2b))) w)
                 rr->do
                         let npc3=npc2{npcAttitude=min 20 ((npcAttitude npc2)+diff rr)}
@@ -316,14 +316,14 @@ bribeInArena = do
                                 Failure {grade=Exceptional} ->  do
                                         let npc3=npc2{npcAttitude=1}
                                         put (gs{gsData=ar2{arenaOpponent=npc3,chToHit=False}})
-                                        w<-fightInArena' 
+                                        w<-fightInArena'
                                         return (combineWidget (WText (printf "The %s doesn't like your money at all!" (name $ npcCharacter c2))) w)
                                 Failure {}->do
                                         put (gs{gsData=ar2{chToHit=False}})
-                                        w<-fightInArena' 
+                                        w<-fightInArena'
                                         return (combineWidget (WText (printf "The %s doesn't want your money!" (name c2b))) w)
                                 rr        -> do
-                                        let 
+                                        let
                                                 gold=bindInt (1,currentGold) $ resultMultiplierLow currentGold rr
                                                 c1c=c1b{inventory=addGold (inventory c1b) (-gold)}
                                                 npc3=c2{npcCharacter=c2b{inventory=addGold (inventory c2b) gold}}
@@ -352,27 +352,27 @@ choiceArenaF _=choiceArena
 
 data ArenaAction = Melee | Escape | Magic | Prayer | Bribe
         deriving (Show,Read,Enum,Bounded,Eq,Ord)
-        
+
 getPossibleArenaActions::Character -> NPCCharacter -> [ArenaAction]
 getPossibleArenaActions c1 np1=let
         spells=spellsToOpponent c1 (npcCharacter np1)
         gold=getGold $ inventory c1
-        in 
-                [Melee,Escape] ++ 
+        in
+                [Melee,Escape] ++
                 (if null spells then [] else [Magic]) ++
-                (case npcType np1 of 
+                (case npcType np1 of
                         Animal -> []
                         _ -> [Prayer] ++ (if gold>0 then [Bribe] else []))
-                        
-{--        
+
+{--
 getPossibleArenaActions::Gold -> NPCCharacter -> [ArenaAction]
-getPossibleArenaActions g (NPCCharacter{npcType=tp})=case tp of 
+getPossibleArenaActions g (NPCCharacter{npcType=tp})=case tp of
         Animal                 -> [Melee .. Magic]
         Humanoid         -> if g>0 then [Melee .. Bribe] else  [Melee .. Prayer]
         Human         -> if g>0 then [Melee .. Bribe] else  [Melee .. Prayer]
         --}
-        
-convertInArena :: WScreenT Arena        
+
+convertInArena :: WScreenT Arena
 convertInArena=do
         gs <- get
         let ar@(Arena {arenaCharacter=c1,arenaOpponent=c2,arenaTickCount=tc}) = gsData gs
@@ -384,7 +384,7 @@ convertInArena=do
                 Failure {grade=Exceptional}->  do
                         let npc3=npc2{npcAttitude=1}
                         put (gs{gsData=ar2{arenaOpponent=npc3,chToHit=False}})
-                        w<-fightInArena' 
+                        w<-fightInArena'
                         return (combineWidget (WText (printf "The %s doesn't like your arguments at all and attacks!" (name $ npcCharacter c2))) w)
                 Failure {}->do
                         put (gs{gsData=ar2{es=Just Finished},screen=Nothing})
@@ -405,7 +405,7 @@ convertInArena=do
                         put (gs2{gsData=ar2{es=Just Finished,arenaOpponent=npc4},screen=Nothing})
                         return (WText msg)
 
-stealInArena :: WScreenT Arena        
+stealInArena :: WScreenT Arena
 stealInArena=do
         gs <- get
         let ar@(Arena {arenaCharacter=c1,arenaOpponent=c2,arenaTickCount=tc}) = gsData gs
@@ -436,13 +436,13 @@ stealInArena=do
                         put (gs2{gsData=ar2{es=Just Finished},screen=Nothing})
                         return (WText msg)
 
-getItemsFromNPC:: RollResult -> (Inventory -> [(Position,ItemType)]) ->WriterT ScreenMessages (RandT (StateT (GameState Arena) IO)) (Int,Gold)        
+getItemsFromNPC:: RollResult -> (Inventory -> [(Position,ItemType)]) ->WriterT ScreenMessages (RandT (StateT (GameState Arena) IO)) (Int,Gold)
 getItemsFromNPC rr f= do
         gs <- get
-        let 
+        let
                 ar@(Arena {arenaOpponent=c2,arenaItems=its1}) = gsData gs
                 c2b=npcCharacter c2
-                carried=f $ inventory $ c2b 
+                carried=f $ inventory $ c2b
                 theoryItemCount=case (grade rr) of
                         Exceptional->4
                         Remarkable->2

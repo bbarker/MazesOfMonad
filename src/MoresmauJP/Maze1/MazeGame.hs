@@ -32,22 +32,22 @@ buildGameState :: GameWorld -> GameState GameWorld
 buildGameState gw=GameState gw (getScreen gw (getDirections gw))
 
 getScreen :: GameWorld -> [Direction] -> Maybe (Screen GameWorld)
-getScreen _ dirs = 
+getScreen _ dirs =
         let
                 f dir = Action (map toLower (show dir)) ("Move " ++ (show dir)) (move dir)
                 actions=map f dirs
                 mapA= Action "map" "See the map" mapAction
-        in        
+        in
                 Just (Screen (mapA:actions))
-                
-                
+
+
 move :: Direction -> ActionFunction GameWorld
 move dir _  = do
         gw <- gets gsData
         let mgw2=moveInMaze gw (getNextCell (position gw) dir)
-        case mgw2 of 
+        case mgw2 of
                         Nothing->return (WText "Ouch!")
-                        Just (gw2,win)->if win 
+                        Just (gw2,win)->if win
                                 then
                                         do
                                         put (GameState gw2 Nothing)
@@ -59,11 +59,11 @@ move dir _  = do
                                                 put gs2
                                                 WList ls<-mapAction [""]
                                                 return (WList (("You move " ++ (show dir)) : ls))
-                
+
 getDirectionsText :: [Direction] -> String
 getDirectionsText dirs= "You can move to: " ++ (concat $ intersperse "," (map show dirs))
-                
-data Direction = North | South | East | West 
+
+data Direction = North | South | East | West
         deriving (Show, Read)
 
 getNextCell :: Cell -> Direction -> Cell
@@ -73,10 +73,10 @@ getNextCell (x,y) West=(x-1,y)
 getNextCell (x,y) East=(x+1,y)
 
 getDirections :: GameWorld -> [Direction]
-getDirections (GameWorld mz (x,y) _) = 
+getDirections (GameWorld mz (x,y) _) =
         let
                 n=filter (\(x1,y1)-> isMovePossible (x,y) (x1,y1) mz ) (getNeighbours (x,y) mz)
-                f (x1,y1) 
+                f (x1,y1)
                         | x1<x  = West
                         | x1>x        = East
                         | y1>y  = South
@@ -94,7 +94,7 @@ mapAction _ =
                 let dirs=getDirections gw
         --let cells=[(x,y)|x<-[0..((width*2)+1)], y<-[0..((width*2)+1)]]
                 return (WList (mapLines ++ [getDirectionsText dirs]))
-        
+
 getMapCharacter :: GameWorld -> Int -> Int -> Char
 getMapCharacter _ _ 0 = '#'
 getMapCharacter _ 0 _ = '#'
@@ -103,22 +103,22 @@ getMapCharacter gw y x         | x == (fst (size $ maze $ gw)) * 2 = wall
                                                 | (even x) && (even y) = wall
                                                 | (x,y) == (doubleSize $ position gw)  = '@'
                                                 | (odd x) && (odd y) = if DataSet.member (halfSize (x,y))(explored gw)
-                                                        then 
+                                                        then
                                                                 if (x,y) == (doubleSize $ end $ maze $ gw)
                                                                         then '$'
                                                                         else ' '
                                                         else wall
-                                                | even x = getMaybePassageCharacter gw (halfSize (x-1,y)) (halfSize (x+1,y)) 
+                                                | even x = getMaybePassageCharacter gw (halfSize (x-1,y)) (halfSize (x+1,y))
                                                 | even y = getMaybePassageCharacter gw (halfSize (x,y-1)) (halfSize (x,y+1))
                                                 | otherwise = '?'
 
 getMaybePassageCharacter :: GameWorld -> Cell -> Cell -> Char
-getMaybePassageCharacter gw from to 
+getMaybePassageCharacter gw from to
         | isMovePossible from to (maze gw) = getPassageCharacter gw from to
-        | otherwise = wall 
+        | otherwise = wall
 
 getPassageCharacter :: GameWorld -> Cell -> Cell -> Char
-getPassageCharacter gw from to 
+getPassageCharacter gw from to
         | DataSet.member from (explored gw) && DataSet.member to (explored gw) = ' '
         | otherwise = wall
 

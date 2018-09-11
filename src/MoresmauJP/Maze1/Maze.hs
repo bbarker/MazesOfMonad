@@ -1,6 +1,6 @@
 -- | Maze handling code: generate and move in the maze
 -- (c) JP Moresmau 2009
-module MoresmauJP.Maze1.Maze 
+module MoresmauJP.Maze1.Maze
 where
 
 import MoresmauJP.Util.Lists
@@ -37,16 +37,16 @@ isWinning :: GameWorld -> Bool
 isWinning gw= (position gw) == (end $ maze gw)
 
 moveInMaze :: GameWorld -> Cell -> Maybe (GameWorld,Bool)
-moveInMaze gw toCell | 
+moveInMaze gw toCell |
         isMovePossible (position gw) toCell (maze gw) =
-                let 
+                let
                         expls=explored gw
                         expls2=DataSet.union expls (DataSet.fromList (getNeighbours toCell (maze gw)))
                         --nub (expls ++ (getNeighbours toCell (maze gw)))
                         gw2=gw{position=toCell,explored=expls2}
                         win=isWinning gw2
                 in Just (gw2,win)
-        | otherwise = Nothing        
+        | otherwise = Nothing
 
 randomMove :: (MonadRandom m) => GameWorld -> m GameWorld
 randomMove gw=do
@@ -61,8 +61,8 @@ isMovePossible from to mz =  elem to (getNeighbours from mz)
 getNeighbours :: Cell -> Maze -> Edges
 getNeighbours from mz =
         fromJust $ DataMap.lookup from (cellmap mz)
-        
-        
+
+
 generateGameWorld:: (MonadRandom m) =>Size -> m GameWorld
 generateGameWorld sz= do
         maze <- generateMaze sz
@@ -80,11 +80,11 @@ generateMaze sz = do
         let m2=DataMap.union m1 (DataMap.fromList(map (\x->(x,[])) frontiers))
         randomFrontiers<-randomHeadp frontiers
         (m3,end) <- mazeStep m2 sz randomFrontiers
-        let m4=removeFirstCell m3 (firstX,firstY) 
+        let m4=removeFirstCell m3 (firstX,firstY)
         return (Maze {cellmap=m4,start=(firstX,firstY),end=end,size=sz})
 
 removeFirstCell :: CellMap -> Cell -> CellMap
-removeFirstCell cm c= 
+removeFirstCell cm c=
         let
                 Just l = DataMap.lookup c cm
         in
@@ -109,7 +109,7 @@ mazeStep cm sz (f:fs) = do
                         return (cm3,f)
                 else
                         mazeStep cm3 sz randomFrontiers
-        
+
 getLeftNeighbour :: Cell ->  Edges
 getLeftNeighbour (1,_) =[]
 getLeftNeighbour (x,y) =[(x-1,y)]
@@ -130,7 +130,7 @@ getUnprocessedNeighbours c sz cm = filter (flip DataMap.notMember cm)(getAllNeig
 
 getInNeighbours :: Cell -> Size -> CellMap -> Edges
 getInNeighbours c sz cm = filter (isIn cm) (getAllNeighbours c sz)
-        where isIn lm key = 
+        where isIn lm key =
                 let val=DataMap.lookup key lm
                 in
                         case val of

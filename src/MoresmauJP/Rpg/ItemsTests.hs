@@ -14,7 +14,7 @@ import MoresmauJP.Util.Random
 
 import Test.HUnit
 
-itemTests=TestList [testUseHealingPotion,testUseMindPotion,testUseWeapon,testUseScrollSuccess,testUseScrollFailure,testUseScrollFumble]        
+itemTests=TestList [testUseHealingPotion,testUseMindPotion,testUseWeapon,testUseScrollSuccess,testUseScrollFailure,testUseScrollFumble]
 
 testUseHealingPotion = TestLabel "Test Use Healing Potion" (TestCase (do
         let jp=createTestChar "JP"
@@ -28,8 +28,8 @@ testUseHealingPotion = TestLabel "Test Use Healing Potion" (TestCase (do
         assertEqual "not recover message2" "You recover 2 Physical points!" (head msgs2)
         assertEqual "Physical must be 10 after potion" 10 (getCharacteristic' jp4 Current Physical)
         assertBool "not remove2" remove2
-        )) 
-        
+        ))
+
 testUseMindPotion = TestLabel "Test Use Mind Potion" (TestCase (do
         let jp=createTestChar "JP"
         assertEqual "Mental must be 10" 10 (getCharacteristic' jp Current Mental)
@@ -42,7 +42,7 @@ testUseMindPotion = TestLabel "Test Use Mind Potion" (TestCase (do
         assertEqual "not recover message2" "You recover 2 Mental points!" (head msgs2)
         assertEqual "Mental must be 10 after potion" 10 (getCharacteristic' jp4 Current Mental)
         assertBool "not remove2" remove2
-        ))         
+        ))
 
 testUseWeapon = TestLabel "Test Use Weapon" (TestCase (do
         let jp=createTestChar "JP"
@@ -50,8 +50,8 @@ testUseWeapon = TestLabel "Test Use Weapon" (TestCase (do
         let jp2=setCharacteristic' jp Current Physical 5
         (r,_)<-evalRandT (runWriterT (useItemEffect battleaxe jp2)) (mkTestWrapper [10])
         assertBool "result is not Nothing" (isNothing r)
-        )) 
-        
+        ))
+
 testUseScrollSuccess = TestLabel "Test Use Scroll Success" (TestCase (do
         let jp=createTestChar "JP"
         assertEqual "spells must be empty" 0 (length $ spells jp)
@@ -67,7 +67,7 @@ testUseScrollSuccess = TestLabel "Test Use Scroll Success" (TestCase (do
         assertEqual "spells2 must be one" 1 (length $ spells jp3)
         assertEqual "spell is not Nimble Fingers" "Nimble Fingers" (spellName $ head $ spells jp3)
         ))
-        
+
 testUseScrollFailure = TestLabel "Test Use Scroll Failure" (TestCase (do
         let jp=createTestChar "JP"
         assertEqual "spells must be empty" 0 (length $ spells jp)
@@ -77,7 +77,7 @@ testUseScrollFailure = TestLabel "Test Use Scroll Failure" (TestCase (do
         assertEqual "not success message" "You fail to learn that spell" s
         assertEqual "spells2 must be empty" 0 (length $ spells jp2)
         ))
-        
+
 testUseScrollFumble = TestLabel "Test Use Scroll Failure" (TestCase (do
         let jp=createTestChar "JP"
         assertEqual "spells must be empty" 0 (length $ spells jp)
@@ -87,4 +87,4 @@ testUseScrollFumble = TestLabel "Test Use Scroll Failure" (TestCase (do
         assertEqual "not success message" "You fail badly to learn that spell" s
         assertEqual "spells2 must be empty" 0 (length $ spells jp2)
         assertEqual "Mental must be 9" 9 (getCharacteristic' jp2 Current Mental)
-        ))        
+        ))

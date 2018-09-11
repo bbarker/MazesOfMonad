@@ -32,12 +32,12 @@ testNPCTemplate=TestLabel "Test NPC Template" (TestCase (do
                                 mapM_ (testNPCInventory t) (possibleItems template)
                         )
                 ) allNPCTemplates))
-        
+
 testNPCTraits :: Character -> (Characteristic,(Int,Int)) -> IO()
 testNPCTraits c (char,(low,high)) = do
         let v=getCharacteristic' c Current char
         assertBool "Value not within range" (v>=low && v<=high)
-        
+
 
 testNPCInventory :: Character -> (Position,[(Maybe ItemType,Int)]) -> IO()
 testNPCInventory c (pos,items)= do
@@ -49,12 +49,12 @@ testNPCInventory c (pos,items)= do
                 Just i -> positionAllowed i pos)
         case (pos,item') of
                 (LeftHand,Just Weapon {hands=2})-> return ()
-                _ -> assertBool ("Item not from template: "++(name c)++":"++(show item')) (elem  item' (map fst items)) 
-        
+                _ -> assertBool ("Item not from template: "++(name c)++":"++(show item')) (elem  item' (map fst items))
+
 
 testNPCOccurences= TestLabel "Test NPCOccurences" (TestCase (do
         let allTemplates=allNPCTemplates
-        mapM_ (\template -> do 
+        mapM_ (\template -> do
                         let level=templateLevel template
                         let levelUp=div (level * 10) 8
                         let levelDown=div (levelUp * 8) 10
@@ -66,10 +66,10 @@ testNPCOccurences= TestLabel "Test NPCOccurences" (TestCase (do
                                         --mapM_  (\a->print ((show a)++(show $ templateLevel $ fst a))) allMax
                                         assertBool ("template "++(typeName template)++ " is not maximum (level:"++(show level)) (elem (template) (map fst allMax))
                                 else
-                                        return () 
+                                        return ()
                 ) allTemplates
-        ))        
-        
+        ))
+
 
 testFightAttitudes=TestLabel "Test Fight Attitudes" (TestCase (do
         let npc1=createTestNPC "NPC"
@@ -84,7 +84,7 @@ testFightAttitudes=TestLabel "Test Fight Attitudes" (TestCase (do
         let expected=[(ContinueFight,11),(TryEscape,6),(PrayForClemency,3),(OfferBribe 100,3)]
         assertEqual "not expected" expected attitudes
         ))
-        
+
 testFightAttitudesAlready=TestLabel "Test Fight Attitudes Excluding Already Chosen" (TestCase (do
         let npc1=createTestNPC "NPC"
         let vc1=addCharacteristic' ((npcCharacter npc1){inventory=makeFullInventory [] 10 100}) Current Physical (-5)
@@ -98,7 +98,7 @@ testFightAttitudesAlready=TestLabel "Test Fight Attitudes Excluding Already Chos
         let expected=[(ContinueFight,11),(TryEscape,6),(PrayForClemency,0),(OfferBribe 100,0)]
         assertEqual "not expected" expected attitudes
         ))
-        
+
 testFightAttitudesAnimal=TestLabel "Test Fight Attitudes Animal" (TestCase (do
         let npc1=(createTestNPC "NPC"){npcType=Animal}
         let vc1=addCharacteristic' ((npcCharacter npc1){inventory=makeFullInventory [] 10 100}) Current Physical (-5)

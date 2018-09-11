@@ -34,13 +34,13 @@ profileByName :: String -> Maybe Profile
 profileByName s= listToMaybe (filter ((== s).fst) profiles)
 
 
-data Criteria = High { 
+data Criteria = High {
                 func::Characteristic
         }
-        | VeryHigh  { 
+        | VeryHigh  {
                 func::Characteristic
         }
-        | NotTooLow  { 
+        | NotTooLow  {
                 func::Characteristic
         }
 
@@ -54,7 +54,7 @@ generateCharacter name gender prof=do
         let extraGold=max extraGoldFromTrade extraGoldFromStealing
         nbSpellsLearned<-diffResult' c spelllearning (toIntLevel Neutral) (\x->if x<0 then 0 else (round $ sqrt $ fromIntegral x))
         spells<-randomPickpn allSpells nbSpellsLearned
-        let c'=c{inventory=addGold (inventory c) extraGold,spells=spells} 
+        let c'=c{inventory=addGold (inventory c) extraGold,spells=spells}
         return c'
 
 generateTraits :: (MonadRandom m)=>Profile -> m CharacteristicRatings
@@ -67,7 +67,7 @@ generateTraits p=do
                         return mt1
                 else
                         generateTraits p
-        
+
 
 makeFit :: (MonadRandom m)=>CharacteristicRatings-> Profile -> Int -> m CharacteristicRatings
 makeFit mt _ 0 = return (mt)
@@ -80,20 +80,20 @@ makeFitter mt (n,cs) = do
         let modifiableCs=filter ((isRatingBelowMax mt).func) cs
         let vals=(map (\x -> (x,traitsScore mt x)) modifiableCs)
         let allZeros=filter (\(_,f)->f==0) vals
-        rf<-if not (null allZeros) 
+        rf<-if not (null allZeros)
                 then
                         return (func $ fst $ (head allZeros))
                 else
-                        do 
+                        do
                                 let (p,_)=firstProfileAndRatio mt
-                                if (fst p)==n 
+                                if (fst p)==n
                                         then
                                                 randomPickp (filter (isRatingBelowMax mt) allCharacteristics)
                                         else
                                                 return (func $ fst $ minimumBy (\a b->compare (snd a) (snd b)) vals)
         let mt1=addCharacteristic mt Current rf 1
-        return (addCharacteristic mt1 Normal rf 1 )        
-        
+        return (addCharacteristic mt1 Normal rf 1 )
+
 isRatingBelowMax :: CharacteristicRatings -> Characteristic -> Bool
 isRatingBelowMax mt c=(getCharacteristic mt Current c)<17
 
@@ -103,7 +103,7 @@ firstProfileAndRatio mt=foldr1 maxRatio (allProfilesAndRatios mt)
 bestProfiles :: CharacteristicRatings -> [(Profile,Float)]
 bestProfiles mt= let
         aboveAverage=filter (\(_,f)->f>=0.5) (allProfilesAndRatios mt)
-        in 
+        in
                 if null aboveAverage
                         then [firstProfileAndRatio mt]
                         else aboveAverage
@@ -115,10 +115,10 @@ maxRatio (p1,f1) (p2,f2)= if f1>f2
 
 allProfilesAndRatios:: CharacteristicRatings -> [(Profile,Float)]
 allProfilesAndRatios mt = map (\p@(_,cs)->(p,traitsScores mt cs)) profiles
-        
+
 traitsScores :: CharacteristicRatings -> [Criteria] -> Float
 traitsScores mt cs = combineScores $  map (traitsScore mt) cs
-        
+
 traitsScore :: CharacteristicRatings -> Criteria -> Float
 traitsScore mt c = ratingScore (getCharacteristic mt Current (func c)) c
 
@@ -132,7 +132,7 @@ ratingScore v (VeryHigh _)
 ratingScore v (NotTooLow _)
         | v<8 = 0
         | otherwise = ((fromIntegral (v-8)) / 12)
-        
+
 combineScores :: [Float] -> Float
 combineScores = minimum
 

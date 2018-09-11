@@ -24,7 +24,7 @@ data Action a = Action {
         }
 
 -- | a Monad transformer, wrapping state (a), IO and Random
-type ScreenT a b= (RandT (StateT a IO)) b 
+type ScreenT a b= (RandT (StateT a IO)) b
 
 -- | Screen Message to display
 type ScreenMessage = String
@@ -35,7 +35,7 @@ type ScreenMessages = [ScreenMessage]
 -- | add a ScreenMessage to the current messages
 addScreenMessage :: (MonadWriter ScreenMessages m,Monad m)=> ScreenMessage -> m ()
 addScreenMessage msg=tell [msg]
-        
+
 -- | A Monad Transformer, ScreenT with GameState and returning Widgets
 type GSWScreenT a= ScreenT (GameState a) (Widget a)
 
@@ -57,14 +57,14 @@ data GameState a = GameState {gsData::a -- ^ the data
         }
 
 -- | Widgets are the actual ui component returned by an action
-data Widget a= 
+data Widget a=
         -- | simple line of text
         WText {
                 wtext::String -- ^ line of text
                 }
         -- | list of items
         | WList {witems :: [String] -- ^ lines of text
-                } 
+                }
         -- | ask for the user to type in a string
         | WInput {
                 witems :: [String] -- ^ lines of text
@@ -76,14 +76,14 @@ data Widget a=
                 ,wlist :: [String] -- ^ list items
                 ,wact :: (String -> WScreenT a) -- ^ handler action
                 }
-        -- | asks a yes/no question 
+        -- | asks a yes/no question
         | WCheck {
                 witems :: [String]  -- ^ lines of text
-                ,wquestion :: String -- ^ question 
-                ,wdefault :: Bool -- ^ default answer 
+                ,wquestion :: String -- ^ question
+                ,wdefault :: Bool -- ^ default answer
                 ,wbact :: (Bool -> WScreenT a) -- ^ handler action
                 }
-        -- | placeholder for no action 
+        -- | placeholder for no action
         | WNothing
 
 -- | a widget and a gamestate
@@ -91,7 +91,7 @@ type ScreenState a = (Widget a,GameState a)
 
 -- | get a Combo widget that uses the show method of the objects passed to automatically build the list
 getShowCombo :: Show b => [String] -- ^ lines of text
-        -> [b] -- ^ objects to display in list 
+        -> [b] -- ^ objects to display in list
         ->  ((ComboResult b) -> WScreenT a) -- ^ handler action (gets the selected object as parameter
         -> Widget a -- ^ the resulting widget
 getShowCombo= getMappedCombo show
@@ -99,13 +99,13 @@ getShowCombo= getMappedCombo show
 -- | get a Combo widget that uses an arbitrary method of the objects passed to automatically build the list
 getMappedCombo :: (b-> String) -- ^ the method to use to translate the object in a string from the menu
         -> [String] -- ^ lines of text
-        -> [b] -- ^ objects to display in list 
+        -> [b] -- ^ objects to display in list
         ->  ((ComboResult b) -> WScreenT a) -- ^ handler action (gets the selected object as parameter
         -> Widget a -- ^ the resulting widget
 getMappedCombo myShow s objs af=
-        let 
+        let
                 objWithNames=map (\x-> (x,myShow x)) objs
-                af2=(\s2 -> do 
+                af2=(\s2 -> do
                         if null s2
                                 then
                                         af Empty
@@ -117,7 +117,7 @@ getMappedCombo myShow s objs af=
                                                 Nothing-> af (Unknown s2)
                                                 )
         in (WCombo s (map snd objWithNames) af2)
-                
+
 -- | checks if the rest of the command line is already an option from the menu
 getPretypedWidget :: Widget a -- ^ the original widget
         -> [String] -- ^ the rest of the parameters typed by the user
@@ -130,7 +130,7 @@ getPretypedWidget wc@(WCombo _ choices af) (typed:_) = do
                 -- we have a match, run the action
                 else af (snd $ head chosen)
 getPretypedWidget w _=return w
-                
+
 removeWithName :: [Action a] -> [Action b] -> [Action a]
 removeWithName aa ab=
         let names=(map actionName aa) \\ (map actionName ab)
@@ -141,16 +141,16 @@ data ComboResult a= Empty -- ^ no result, nothing chosen
          | Unknown String -- ^ unknown result (typed something not in a list)
          | Exact a -- ^ proper choice
         deriving (Show,Read)
-        
+
 -- | start a UI loop
 start :: ScreenState a -- ^ initial state
         -> IO(a) -- ^ result
 start (w,gs)=do
         GameState s2 _ <- ioRandT (commandLoop2 w) gs
         return s2
-        
+
 -- | internal UI loop
-commandLoop2 :: Widget a -- ^ current widget to render 
+commandLoop2 :: Widget a -- ^ current widget to render
         -> GSWScreenT a -- ^ screen monad we run in
 commandLoop2 w = do
         af<- liftIO $ renderWidget w
@@ -161,9 +161,9 @@ commandLoop2 w = do
                                 then
                                         do
                                                 (w2,msgs) <- runWriterT $ fromJust af
-                                                when (not $ null msgs) (liftIO $ (mapM_ putStrLn msgs))        
+                                                when (not $ null msgs) (liftIO $ (mapM_ putStrLn msgs))
                                                 commandLoop2 w2
-                                else                
+                                else
                                         do
                                                 liftIO $ putStr ">"
                                                 input <- liftIO $ getLine
@@ -176,13 +176,13 @@ commandLoop2 w = do
                                                                         let (cmd:_)=cmds
                                                                         let af2 = getAction (map Data.Char.toLower cmd) (actions $ fromJust scr)
                                                                         (w2,msgs)<- runWriterT (af2 cmds)
-                                                                        when (not $ null msgs) (liftIO $ (mapM_ putStrLn msgs))        
+                                                                        when (not $ null msgs) (liftIO $ (mapM_ putStrLn msgs))
                                                                         commandLoop2 w2
                 else
                         return WNothing
 
 -- | render a widget onto the console
-renderWidget :: Widget a -- ^ the widget to render        
+renderWidget :: Widget a -- ^ the widget to render
         -> IO(Maybe(WScreenT a)) -- ^ the result (may be empty)
 renderWidget (WNothing)= do
         return Nothing
@@ -216,16 +216,16 @@ renderWidget (WCombo ss1 ss2 af)=do
         if null chosen
                 then return (Just $ af "")
                 else return (Just $ af (snd $ head chosen))
-                        
--- | get arguments typed in at the command line        
-getArgs :: IO([String])        -- ^ the resulting arguments                        
+
+-- | get arguments typed in at the command line
+getArgs :: IO([String])        -- ^ the resulting arguments
 getArgs = do
         input <- getLine
         return (words input)
 
--- | show help with available commands                        
-help :: Bool -- ^ display help on system commands too? 
-        -> ActionFunction a -- ^ the handler function 
+-- | show help with available commands
+help :: Bool -- ^ display help on system commands too?
+        -> ActionFunction a -- ^ the handler function
 help withSystem _ = do
         let        f (Action s1 s2 _)= (s1++": "++s2)
         let        sysLines= if withSystem
@@ -235,7 +235,7 @@ help withSystem _ = do
         let acts=actions $ fromJust $ screen gs
         let wl=WList (sort ( sysLines ++
                         (map f acts)))
-        return (wl) 
+        return (wl)
 
 -- | default handler for unknown actions
 unknown :: ActionFunction a
@@ -245,7 +245,7 @@ unknown args = return (WText ("I do not understand the command " ++ (head args))
 quit :: ActionFunction a
 quit _ = do
         modify (\gs-> gs{screen=Nothing})
-        return (WText ("Bye bye, hope you enjoyed the game!")) 
+        return (WText ("Bye bye, hope you enjoyed the game!"))
 
 -- | when several actions could fit what the user typed, display the list of full names
 choice :: [String] -- ^ possible actions
@@ -253,12 +253,12 @@ choice :: [String] -- ^ possible actions
 choice ss _ = return (WList ss)
 
 -- | back action
-backAction :: Screen a -- ^ Screen to go back to 
+backAction :: Screen a -- ^ Screen to go back to
         -> Action a -- ^ resulting action
 backAction sc=Action "back" "Go back to main screen" (back sc)
 
 -- | back handler
-back :: Screen a -- ^ Screen to go back to 
+back :: Screen a -- ^ Screen to go back to
         -> ActionFunction a -- ^ result
 back sc _ =do
         (GameState a _) <- get
@@ -270,14 +270,14 @@ systemActions :: [Action a]
 systemActions = [Action "help" "Provides help on available actions" (help True)
         ,Action "?" "Provides help on available actions" (help True)
         ,Action "quit" "Exit the game" quit]
-                                
+
 -- | get action from what the user typed and the possible actions
-getAction :: String -- ^ the first word the user typed 
-        -> [Action a] -- ^ the possible actions 
+getAction :: String -- ^ the first word the user typed
+        -> [Action a] -- ^ the possible actions
         -> ActionFunction a -- ^ the chosen action handler
 getAction "help" _ = help True
 getAction cmd acts =
-        let        
+        let
                 filt=(filter (\x-> isPrefixOf cmd (map Data.Char.toLower (actionName x))))
                 possible=(filt systemActions) ++ (filt acts)
                 l = length possible
@@ -286,19 +286,19 @@ getAction cmd acts =
                         unknown
                 else if l==1 then
                         actionFunction $ head possible
-                else 
+                else
                         choice (map (\(Action s1 _ _)-> s1) possible)
 
 -- | combine a widget with maybe another
-combineMaybeWidget :: Widget a -- ^ initial widget 
-        -> Maybe (Widget a) -- ^ next widget 
+combineMaybeWidget :: Widget a -- ^ initial widget
+        -> Maybe (Widget a) -- ^ next widget
         -> Widget a -- ^ resulting widget
 combineMaybeWidget w Nothing = w
 combineMaybeWidget w1 (Just w2) =combineWidget w1 w2
-        
--- | combine a widget with another        
-combineWidget :: Widget a -- ^ initial widget 
-        -> Widget a -- ^ next widget 
+
+-- | combine a widget with another
+combineWidget :: Widget a -- ^ initial widget
+        -> Widget a -- ^ next widget
         -> Widget a -- ^ resulting widget
 combineWidget WNothing a=a
 combineWidget a WNothing=a

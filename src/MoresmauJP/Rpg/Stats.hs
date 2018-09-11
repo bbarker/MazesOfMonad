@@ -46,9 +46,9 @@ gameStats rs=let
         itemProp=div cellCount itemCount
         allTraps=(filter isTrap) $ concat $ M.elems $ items $ objects $ fromJust $ mgs rs
         trapCount=length allTraps
-        trapProp=div cellCount trapCount                
+        trapProp=div cellCount trapCount
         in GameState chLevel npcCount npcProp avgLevel avgAttitude itemCount itemProp trapCount trapProp
-        
+
 fileGameStats :: String -> IO GameStats
 fileGameStats name=do
         dir<-getAppUserDataDirectory "MazesOfMonad"

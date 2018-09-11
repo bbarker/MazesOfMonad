@@ -26,7 +26,7 @@ testSpellsToMyselfTemporary= TestLabel "Test spells to myself Temporary" (TestCa
         assertEqual "not two messages" 2 (length msgs)
         assertEqual "not Nimble Fingers message" "The spell Nimble Fingers worked" (head msgs)
         assertEqual "not under affect message" "Under the influence of Nimble Fingers (1 Dexterity point)" (head $ tail msgs)
-        assertEqual "dex is not 11" 11 (getCharacteristic' jp2 Current Dexterity) 
+        assertEqual "dex is not 11" 11 (getCharacteristic' jp2 Current Dexterity)
         let spellsToMe2=spellsToMyself jp2
         assertEqual "not zero spell2" 0 (length spellsToMe2)
         let (jp3,_)=expireAffects jp2 4
@@ -36,7 +36,7 @@ testSpellsToMyselfTemporary= TestLabel "Test spells to myself Temporary" (TestCa
         let spellsToMe4=spellsToMyself jp4
         assertEqual "not one spell4" 1 (length spellsToMe4)
         ))
-        
+
 testSpellsToMyselfPermanent= TestLabel "Test spells to myself Permanent" (TestCase (do
         let jp0=(createTestChar "jp"){spells=[Spell "Feel Better" Physical Recovery Permanent]}
         let jp=setCharacteristic' jp0 Current Physical 9
@@ -47,12 +47,12 @@ testSpellsToMyselfPermanent= TestLabel "Test spells to myself Permanent" (TestCa
         assertEqual "not two messages" 2 (length msgs)
         assertEqual "not Feel Better message" "The spell Feel Better worked" (head msgs)
         assertEqual "not recover message" "You recover 1 Physical point!" (head $ tail msgs)
-        assertEqual "physical is not 10" 10 (getCharacteristic' jp2 Current Physical) 
+        assertEqual "physical is not 10" 10 (getCharacteristic' jp2 Current Physical)
         let spellsToMe2=spellsToMyself jp2
         assertEqual "not one spell" 1 (length spellsToMe2)
         assertEqual "not Feel Better" "Feel Better" (spellName $ head spellsToMe2)
-        ))        
-        
+        ))
+
 testSpellToOpponentSuccess= TestLabel "Test spell to opponent success" (TestCase (do
         let jp=(createTestChar "JP") {spells=[Spell "Fire Ball" Physical Negative Permanent]}
         let troll=createTestChar "Troll"
@@ -62,7 +62,7 @@ testSpellToOpponentSuccess= TestLabel "Test spell to opponent success" (TestCase
         assertEqual "not 1 message" 1 (length msgs)
         assertEqual "not Fire Ball message" "JP casts Fire Ball" (head msgs)
         ))
-        
+
 testSpellToOpponentSuccessWeak= TestLabel "Test spell to weak opponent success" (TestCase (do
         let jp=(createTestChar "JP") {spells=[Spell "Fire Ball" Physical Negative Permanent]}
         let troll=setCharacteristic' (createTestChar "Troll") Current Willpower 5
@@ -71,8 +71,8 @@ testSpellToOpponentSuccessWeak= TestLabel "Test spell to weak opponent success" 
         assertEqual "not physical 8" 8 (getCharacteristic' troll1 Current Physical)
         assertEqual "not 1 message" 1 (length msgs)
         assertEqual "not Fire Ball message" "JP casts Fire Ball" (head msgs)
-        ))        
-        
+        ))
+
 testSpellToOpponentFailure= TestLabel "Test spells to opponent failure" (TestCase (do
         let jp=(createTestChar "JP") {spells=[Spell "Fire Ball" Physical Negative Permanent]}
         let troll=createTestChar "Troll"
@@ -82,8 +82,8 @@ testSpellToOpponentFailure= TestLabel "Test spells to opponent failure" (TestCas
         assertEqual "not mental 10" 10 (getCharacteristic' jp1 Current Mental)
         assertEqual "not 1 message" 1 (length msgs)
         assertEqual "not Fire Ball message" "The spell Fire Ball fails" ( head msgs)
-        ))        
-        
+        ))
+
 testSpellToOpponentFumble= TestLabel "Test spells to opponent fumble mental" (TestCase (do
         let jp=(createTestChar "JP") {spells=[Spell "Fire Ball" Physical Negative Permanent]}
         let troll=createTestChar "Troll"
@@ -93,8 +93,8 @@ testSpellToOpponentFumble= TestLabel "Test spells to opponent fumble mental" (Te
         assertEqual "not 1 message" 1 (length msgs)
         assertEqual "not Fire Ball message" "The spell Fire Ball backfires on you and causes you to lose 1 Mental point!" (head msgs)
         assertEqual "Mental must be 9" 9 (getCharacteristic' jp1 Current Mental)
-        ))        
-        
+        ))
+
 testSpellToOpponentFumbleMad= TestLabel "Test spells to opponent fumble mad" (TestCase (do
         let jp=(createTestChar "JP") {spells=[Spell "Fire Ball" Physical Negative Permanent]}
         let jp'=setCharacteristic' jp Current Mental 1
@@ -106,7 +106,7 @@ testSpellToOpponentFumbleMad= TestLabel "Test spells to opponent fumble mad" (Te
         assertEqual "not Fire Ball message" "The spell Fire Ball backfires on you and causes you to lose 1 Mental point!" (head msgs)
         assertEqual "Mental must be 0" 0 (getCharacteristic' jp1 Current Mental)
         ))
-        
+
 testSpellToOpponentFumbleIntelligence= TestLabel "Test spells to opponent fumble intelligence" (TestCase (do
         let jp=(createTestChar "JP") {spells=[Spell "Fire Ball" Physical Negative Permanent]}
         let troll=createTestChar "Troll"
@@ -116,8 +116,8 @@ testSpellToOpponentFumbleIntelligence= TestLabel "Test spells to opponent fumble
         assertEqual "not 1 message" 1 (length msgs)
         assertEqual "not Fire Ball message" "The spell Fire Ball confuses you and causes you to lose 1 Intelligence point!" (head msgs)
         assertEqual "Mental must be 9" 9 (getCharacteristic' jp1 Current Intelligence)
-        ))                
-        
+        ))
+
 testSpellToOpponentFumbleForget= TestLabel "Test spells to opponent fumble forget" (TestCase (do
         let jp=(createTestChar "JP") {spells=[Spell "Fire Ball" Physical Negative Permanent]}
         let troll=createTestChar "Troll"
@@ -127,8 +127,8 @@ testSpellToOpponentFumbleForget= TestLabel "Test spells to opponent fumble forge
         assertEqual "not 1 message" 1 (length msgs)
         assertEqual "not Fire Ball message" "The spell Fire Ball backfires and you promptly forget it!" (head msgs)
         assertEqual "Still has spells" 0 (length $ spells jp1)
-        ))                
-        
+        ))
+
 testSpellToOpponentFumbleBackFires= TestLabel "Test spells to opponent fumble back fires" (TestCase (do
         let jp=(createTestChar "JP") {spells=[Spell "Fire Ball" Physical Negative Permanent]}
         let troll=createTestChar "Troll"
@@ -138,4 +138,4 @@ testSpellToOpponentFumbleBackFires= TestLabel "Test spells to opponent fumble ba
         assertEqual "not 1 message" 1 (length msgs)
         assertEqual "not Fire Ball message" "The spell Fire Ball bounces back and hits you!" (head msgs)
         assertEqual "not physical 2" 2 (getCharacteristic' jp1 Current Physical)
-        ))                
+        ))

@@ -21,7 +21,7 @@ import MoresmauJP.Util.RandomTests
 import MoresmauJP.Rpg.ArenaTests
 import MoresmauJP.Rpg.Stats
 
-import Test.HUnit (runTestTT,Test(TestList),Counts(..)) 
+import Test.HUnit (runTestTT,Test(TestList),Counts(..))
 
 -- | main entry point
 main :: IO()
@@ -54,4 +54,4 @@ test = do
                 mazeObjectsTests,
                 arenaTests])
 
-concatTestList tl = TestList (concat (map (\(TestList ts) -> ts ) tl))        
+concatTestList tl = TestList (concat (map (\(TestList ts) -> ts ) tl))

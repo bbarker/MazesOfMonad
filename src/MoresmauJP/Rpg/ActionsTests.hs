@@ -29,7 +29,7 @@ testDifficultyLevel = TestLabel "testDifficultyLevel" (TestCase (do
         assertEqual "Not standard success 9" (Success Standard 9) rr
         ((_,rr),_)<-evalRandT (runWriterT $ action jp [Dexterity] (toIntLevel NearUnmissable)) sg
         assertEqual "Not standard success 10" (Success Standard 10) rr
-                
+
         ((_,rr),_)<-evalRandT (runWriterT $ action jp [Dexterity] (toIntLevel RatherHard)) sg
         assertEqual "Not standard failure 3" (Failure Standard 3) rr
         ((_,rr),_)<-evalRandT (runWriterT $ action jp [Dexterity] (toIntLevel Hard)) sg
@@ -38,9 +38,9 @@ testDifficultyLevel = TestLabel "testDifficultyLevel" (TestCase (do
         assertEqual "Not standard failure 9" (Failure Standard 9) rr
         ((_,rr),_)<-evalRandT (runWriterT $ action jp [Dexterity] (toIntLevel NearImpossible)) sg
         assertEqual "Not standard failure 9" (Failure Standard 9) rr
-                        
+
         ))
-        
+
 
 testEvalResults = TestList [
                 testEvalResult 1 10 (Success Exceptional 9)
@@ -50,14 +50,14 @@ testEvalResults = TestList [
                 ,testEvalResult 17 10 (Failure Remarkable 7)
                 ,testEvalResult 19 10 (Failure Exceptional 9)
         ]
-        
+
 testEvalResult roll score expected= TestLabel (printf "testEvalResult %d/%d" roll score)
         (TestCase (do
                 let actual = fst (evalResult roll score)
                 let msg= printf "%d/%d should be %s but is %s " roll score (show expected) (show actual)
                 assertEqual msg expected actual
                 ))
-                
+
 testActionCausesLevel=  TestLabel "testActionCausesLevel" (TestCase (do
         let jp=createTestChar "JP"
         assertEqual "current dexterity is not 10" 10 (getCharacteristic' jp Current Dexterity)
@@ -75,4 +75,3 @@ testActionCausesLevel=  TestLabel "testActionCausesLevel" (TestCase (do
         assertEqual "not 1 message" 1 (length msgs)
         assertEqual "not right message" "JP gains 1 point in Dexterity" (head msgs)
         ))
-        
