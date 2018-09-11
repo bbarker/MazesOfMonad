@@ -151,13 +151,13 @@ data FumbleEvent = SelfWound | DexterityLoss | CharismaLoss | WeaponBreak
 	deriving (Show,Read,Eq,Bounded,Enum,Ord)
 
 instance Show Message where
-	showsPrec _ (Message (c,(Fumble SelfWound damage _))) = showString $ printf "%s fumbles and gives %s %d damages" (name c) (reflective c) damage
+	showsPrec _ (Message (c,(Fumble SelfWound damage _))) = showString $ printf "%s fumbles and gives %s %d damage" (name c) (reflective c) damage
 	showsPrec _ (Message (c,(Fumble DexterityLoss _ _))) = showString $ printf "%s fumbles and gives %s a hand injury (-1 Dexterity)" (name c) (reflective c)
 	showsPrec _ (Message (c,(Fumble CharismaLoss _ _))) = showString $ printf "%s fumbles and gives %s a face injury (-1 Charisma)" (name c) (reflective c)
 	showsPrec _ (Message (c,(Fumble WeaponBreak _ s))) = showString $ printf "%s fumbles and breaks %s %s" (name c) (possessive c) s
 	showsPrec _ (Message (c,(Miss))) = showString $ printf "%s misses" (name c)
-	showsPrec _ (Message (c,(Hit 0))) = showString $ printf "%s hits but causes no damages" (name c)
-	showsPrec _ (Message (c,(Hit damage))) = showString $ printf "%s hits and causes %d damages" (name c) damage
+	showsPrec _ (Message (c,(Hit 0))) = showString $ printf "%s hits but causes no damage" (name c)
+	showsPrec _ (Message (c,(Hit damage))) = showString $ printf "%s hits and causes %d damage" (name c) damage
 	showsPrec _ (Message (c,TwoHandedAttack))= showString $ printf "%s manages a two-hand attack" (name c) 
 	showsPrec _ (Message (c,ShieldDefense))= showString $ printf "%s manages to shield" (name c) 
 
